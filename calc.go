@@ -64,6 +64,22 @@ func Mul(x [][]float64, y [][]float64) ([][]float64) {
 	return z
 }
 
+func Apply(x [][]float64, fn func(float64) (float64)) ([][]float64) {
+	n := len(x)
+	m := len(x[0])
+	z := make([][]float64, n)
+	for i:=0; i<n; i++{
+		z[i] = make([]float64, m)
+	}
+	for i, xArray := range x {
+		for j, _ := range xArray {
+			z[i][j] = fn(x[i][j])
+		}
+	}
+	return z
+}
+
+
 func Dot(x [][]float64, y[][]float64) ([][]float64) {
 	nx := len(x)
 	mx := len(x[0])

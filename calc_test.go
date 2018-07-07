@@ -43,6 +43,20 @@ func TestAddSuccess(t *testing.T) {
 	ExpCheck(zReal, zExp, t)
 }
 
+func minus(x float64) float64{
+	return x * -1
+}
+
+func TestApplySuccess(t *testing.T) {
+	zExp := [][]float64{
+		{-1,-2,-3},
+		{-4,-5,-6},
+		{-7,-8,-9},
+	}
+	zReal := Apply(x,minus)
+	ExpCheck(zReal, zExp, t)
+}
+
 func TestSubSuccess(t *testing.T) {
 	zExp := [][]float64{
 		{-7,-5,-3},
