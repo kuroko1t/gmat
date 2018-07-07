@@ -67,6 +67,16 @@ func TestSubSuccess(t *testing.T) {
 	ExpCheck(zReal, zExp, t)
 }
 
+func TestTSuccess(t *testing.T) {
+	zExp := [][]float64{
+		{1,4,7},
+		{2,5,8},
+		{3,6,9},
+	}
+	zReal := T(x)
+	ExpCheck(zReal, zExp, t)
+}
+
 func TestMulESuccess(t *testing.T) {
 	zExp := [][]float64{
 		{3,6,9},
@@ -87,6 +97,26 @@ func TestMulSuccess(t *testing.T) {
 	ExpCheck(zReal, zExp, t)
 }
 
+func TestDivSuccess(t *testing.T) {
+	var xdiv =[][]float64{
+		{4,6,8},
+		{4,6,8},
+		{4,6,8},
+	}
+	var ydiv =[][]float64{
+		{2,3,4},
+		{2,3,4},
+		{2,3,4},
+	}
+	zExp := [][]float64{
+		{2,2,2},
+		{2,2,2},
+		{2,2,2},
+	}
+	zReal := Div(xdiv, ydiv)
+	ExpCheck(zReal, zExp, t)
+}
+
 func TestDotSuccess(t *testing.T) {
 	xdot :=[][]float64{
 		{1,2,3},
@@ -104,5 +134,25 @@ func TestDotSuccess(t *testing.T) {
 		{114,90},
 	}
 	zReal := Dot(xdot, ydot)
+	ExpCheck(zReal, zExp, t)
+}
+
+func TestSumRowSuccess(t *testing.T) {
+	zExp := [][]float64{
+		{12,15,18},
+		{12,15,18},
+		{12,15,18},
+	}
+	zReal := SumRow(x)
+	ExpCheck(zReal, zExp, t)
+}
+
+func TestSumColSuccess(t *testing.T) {
+	zExp := [][]float64{
+		{6,6,6},
+		{15,15,15},
+		{24,24,24},
+	}
+	zReal := SumCol(x)
 	ExpCheck(zReal, zExp, t)
 }
