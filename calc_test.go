@@ -22,6 +22,26 @@ func ExpCheck(zReal [][]float64, zExp [][]float64, t *testing.T) {
 	}
 }
 
+func ExpCheck4D(zReal [][][][]float64, zExp [][][][]float64, t *testing.T) {
+	success := true
+	for i , zx := range zExp {
+		for j, zy := range zx {
+			for k , zz := range zy {
+				for l, _ := range zz {
+					if zExp[i][j][k][l] != zReal[i][j][k][l] {
+						success = false
+					}
+				}
+			}
+		}
+	}
+	if !success {
+		fmt.Println("Real:",zReal)
+		fmt.Println("Exp:",zExp)
+		t.Fatal("failed Test!")
+	}
+}
+
 var x =[][]float64{
 	{1,2,3},
 	{4,5,6},
@@ -155,4 +175,39 @@ func TestSumColSuccess(t *testing.T) {
 	}
 	zReal := SumCol(x)
 	ExpCheck(zReal, zExp, t)
+}
+
+func TestPad4DSuccess(t *testing.T) {
+	var xpad =[][][][]float64{
+		{
+			{
+				{4,6,8},
+				{4,6,8},
+				{4,6,8},
+			},
+			{
+				{4,6,8},
+				{4,6,8},
+				{4,6,8},
+			},
+		},
+	}
+
+	var zExp =[][][][]float64{
+		{
+			{
+				{0,4,6,8,0},
+				{0,4,6,8,0},
+				{0,4,6,8,0},
+			},
+			{
+				{0,4,6,8,0},
+				{0,4,6,8,0},
+				{0,4,6,8,0},
+			},
+		},
+	}
+	var pad = [][]int{{0,0},{0,0},{0,0},{1,1}}
+	zReal := Pad4D(xpad,pad)
+	ExpCheck4D(zReal, zExp, t)
 }
