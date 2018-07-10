@@ -57,15 +57,16 @@ func Trans6D(input [][][][][][]float64,n int, c int, h int, w int, x int, y int)
 	inW := len(input[0][0][0])
 	inX := len(input[0][0][0][0])
 	inY := len(input[0][0][0][0][0])
-	tranmap := map[inti]int{0:inN, 1:inC, 2:inH, 3:inW, 4:inX, 5:inY}
+	tranmap := map[int]int{0:inN, 1:inC, 2:inH, 3:inW, 4:inX, 5:inY}
 	z := Make6D(tranmap[n],tranmap[c],tranmap[h],tranmap[w],tranmap[x],tranmap[y])
 	for i:= range z {
 		for j := range z[i] {
 			for k := range z[i][j] {
 				for l := range z[i][j][k] {
 					for m := range z[i][j][k][l] {
-						for n := range z[i][j][k][l][m] {
-							= z[i][j][k][l][m][n]
+						for o := range z[i][j][k][l][m] {
+							var amap = map[int]int{0:i, 1:j, 2:k, 3:l, 4:m, 5:o}
+							z[i][j][k][l][m][o] = input[amap[n]][amap[c]][amap[h]][amap[w]][amap[x]][amap[y]]
 						}
 					}
 				}
@@ -75,6 +76,35 @@ func Trans6D(input [][][][][][]float64,n int, c int, h int, w int, x int, y int)
 	return z
 }
 
+func Reshape6D(input [][][][][][], reX int, reY int) ([][][][]float64) {
+	n := len(input)
+	c := len(input[0])
+	h := len(input[0][0])
+	w := len(input[0][0][0])
+	x := len(input[0][0][0][0])
+	y := len(input[0][0][0][0][0])
+	if reY == -1 {
+		reY = n * c * h * w * x * y / reX
+	}
+	var input1D []float64
+	tmp := 0
+	for i:= range input {
+		for j := range input[i] {
+			for k := range input[i][j] {
+				for l := range input[i][j][k] {
+					for m := range input[i][j][l][l] {
+						for o := range input[i][j][k][l][m] {
+							input1D[tmp] = input[i][j][k][l][m][o]
+							tmp++
+						}
+					}
+				}
+			}
+		}
+	}
+	result := mat.Make4D(reX,reY)
+
+}
 
 func Pad4D(input [][][][]float64, pad [][]int) [][][][]float64{
 	padN := len(pad)
