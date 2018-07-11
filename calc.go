@@ -47,6 +47,30 @@ func Make6D(n int, c int, h int, w int, x int, y int) ([][][][][][]float64) {
 	return z
 }
 
+func Trans4D(input [][][][]float64,n int, c int, h int, w int) ([][][][]float64) {
+	if n >= 4 || c >= 4 || h >= 4 || w >= 4 {
+		log.Fatal("need to set 4 below param")
+	}
+	inN := len(input)
+	inC := len(input[0])
+	inH := len(input[0][0])
+	inW := len(input[0][0][0])
+	tranmap := map[int]int{0:inN, 1:inC, 2:inH, 3:inW}
+	z := Make4D(tranmap[n],tranmap[c],tranmap[h],tranmap[w])
+	for i:= range z {
+		for j := range z[i] {
+			for k := range z[i][j] {
+				for l := range z[i][j][k] {
+					var amap = map[int]int{0:i, 1:j, 2:k, 3:l}
+					z[i][j][k][l] = input[amap[n]][amap[c]][amap[h]][amap[w]]
+				}
+			}
+		}
+	}
+	return z
+}
+
+
 func Trans6D(input [][][][][][]float64,n int, c int, h int, w int, x int, y int) ([][][][][][]float64) {
 	if n >= 6 || c >= 6 || h >= 6 || w >= 6 || x >= 6 || y >= 6 {
 		log.Fatal("need to set 6 below param")
@@ -76,7 +100,69 @@ func Trans6D(input [][][][][][]float64,n int, c int, h int, w int, x int, y int)
 	return z
 }
 
-func Reshape6D(input [][][][][][], reX int, reY int) ([][][][]float64) {
+func Reshape2D(input [][]float64, reN int, reC int, reH int, reW int) ([][][][]float64) {
+	n := len(input)
+	c := len(input[0])
+	if reW == -1 {
+		reW = n * c / (reN * reC * reH)
+	}
+	var input1D []float64
+	tmp := 0
+	for i:= range input {
+		for j := range input[i] {
+			input1D[tmp] = input[i][j]
+			tmp++
+		}
+	}
+	result := Make4D(reN,reC,reH,reW)
+	tmp = 0
+	for i:= range result {
+		for j:= range result[i] {
+			for k := range result[i][j] {
+				for l := range result[i][j][k] {
+					result[i][j][k][l] = input1D[tmp]
+					tmp++
+				}
+			}
+		}
+	}
+	return result
+}
+
+func Reshape4D(input [][][][]float64, reX int, reY int) ([][]float64) {
+	n := len(input)
+	c := len(input[0])
+	h := len(input[0][0])
+	w := len(input[0][0][0])
+	if reY == -1 {
+		reY = n * c * h * w / reX
+	} else if reX == -1 {
+		reX = n * c * h * w / reY
+	}
+	var input1D []float64
+	tmp := 0
+	for i:= range input {
+		for j := range input[i] {
+			for k := range input[i][j] {
+				for l := range input[i][j][k] {
+					input1D[tmp] = input[i][j][k][l]
+					tmp++
+				}
+			}
+		}
+	}
+	result := Make(reX,reY)
+	tmp = 0
+	for i:= range result {
+		for j:= range result[i] {
+			result[i][j] = input1D[tmp]
+			tmp++
+		}
+	}
+	return result
+}
+
+func Reshape6D(input [][][][][][]float64, reX int, reY int) ([][]float64) {
 	n := len(input)
 	c := len(input[0])
 	h := len(input[0][0])
@@ -102,8 +188,33 @@ func Reshape6D(input [][][][][][], reX int, reY int) ([][][][]float64) {
 			}
 		}
 	}
-	result := mat.Make4D(reX,reY)
+	result := Make(reX,reY)
+	tmp = 0
+	for i:= range result {
+		for j:= range result[i] {
+			result[i][j] = input1D[tmp]
+			tmp++
+		}
+	}
+	return result
+}
 
+func Shape4D(input [][][][]float64) (n int, c int, h int, w int) {
+	n = len(input)
+	c = len(input[0])
+	h = len(input[0][0])
+	w = len(input[0][0][0])
+	return n, c, h, w
+}
+
+func Shape6D(input [][][][][][]float64) (n int, c int, h int, w int, x int, y int) {
+	n = len(input)
+	c = len(input[0])
+	h = len(input[0][0])
+	w = len(input[0][0][0])
+	x = len(input[0][0][0][0])
+	y = len(input[0][0][0][0][0])
+	return n, c, h, w, x, y
 }
 
 func Pad4D(input [][][][]float64, pad [][]int) [][][][]float64{
@@ -168,6 +279,22 @@ func Add(x [][]float64, y[][]float64) ([][]float64) {
 	return z
 }
 
+func AddE(x [][]float64, y float64) ([][]float64) {
+	n := len(x)
+	m := len(x[0])
+	z := make([][]float64, n)
+	for i:=0; i<n; i++{
+		z[i] = make([]float64, m)
+
+	}
+	for i, xArray := range x {
+		for j, _ := range xArray {
+			z[i][j] = x[i][j] + y
+		}
+	}
+	return z
+}
+
 func Sub(x [][]float64, y[][]float64) ([][]float64) {
 	n := len(x)
 	m := len(x[0])
@@ -183,6 +310,23 @@ func Sub(x [][]float64, y[][]float64) ([][]float64) {
 	}
 	return z
 }
+
+func SubE(x [][]float64, y float64) ([][]float64) {
+	n := len(x)
+	m := len(x[0])
+	z := make([][]float64, n)
+	for i:=0; i<n; i++{
+		z[i] = make([]float64, m)
+
+	}
+	for i, xArray := range x {
+		for j, _ := range xArray {
+			z[i][j] = x[i][j] - y
+		}
+	}
+	return z
+}
+
 
 func MulE(x [][]float64, y float64) ([][]float64) {
 	n := len(x)
@@ -287,6 +431,8 @@ func Dot(x [][]float64, y[][]float64) ([][]float64) {
 }
 
 func SumRow(x [][]float64) ([][]float64) {
+	//sum | direction [a,b]
+	//    ^           [a,b]
 	n := len(x)
 	m := len(x[0])
 	sumArray := make([][]float64, n)
@@ -306,6 +452,8 @@ func SumRow(x [][]float64) ([][]float64) {
 }
 
 func SumCol(x [][]float64) ([][]float64) {
+	//sum -> direction [a,a]
+	//				   [b,b]
 	n := len(x)
 	m := len(x[0])
 	sumArray := make([][]float64, n)
