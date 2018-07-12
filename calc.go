@@ -47,6 +47,23 @@ func Make6D(n int, c int, h int, w int, x int, y int) ([][][][][][]float64) {
 	return z
 }
 
+func Trans2D(input [][]float64,n int, c int) ([][]float64) {
+	if n >= 2 || c >= 2 {
+		log.Fatal("need to set 2 below param")
+	}
+	inN := len(input)
+	inC := len(input[0])
+	tranmap := map[int]int{0:inN, 1:inC}
+	z := Make(tranmap[n],tranmap[c])
+	for i:= range z {
+		for j := range z[i] {
+			var amap = map[int]int{0:i, 1:j}
+			z[i][j] = input[amap[n]][amap[c]]
+		}
+	}
+	return z
+}
+
 func Trans4D(input [][][][]float64,n int, c int, h int, w int) ([][][][]float64) {
 	if n >= 4 || c >= 4 || h >= 4 || w >= 4 {
 		log.Fatal("need to set 4 below param")
@@ -129,6 +146,64 @@ func Reshape2D(input [][]float64, reN int, reC int, reH int, reW int) ([][][][]f
 	return result
 }
 
+func Reshape2D2D(input [][]float64, reX int, reY int) ([][]float64) {
+	n := len(input)
+	c := len(input[0])
+	if reX == -1 {
+		reX = n * c / (reY)
+	} else if reY == -1 {
+		reY = n * c / (reX)
+	}
+	var input1D []float64
+	tmp := 0
+	for i:= range input {
+		for j := range input[i] {
+			input1D[tmp] = input[i][j]
+			tmp++
+		}
+	}
+	result := Make(reX,reY)
+	tmp = 0
+	for i:= range result {
+		for j:= range result[i] {
+			result[i][j] = input1D[tmp]
+			tmp++
+		}
+	}
+	return result
+}
+
+
+func Reshape2D6D(input [][]float64, reN int, reC int, reH int, reW int,reX int, reY int) ([][][][][][]float64) {
+	//n := len(input)
+	//c := len(input[0])
+	var input1D []float64
+	tmp := 0
+	for i:= range input {
+		for j := range input[i] {
+			input1D[tmp] = input[i][j]
+			tmp++
+		}
+	}
+	result := Make6D(reN,reC,reH,reW,reX,reY)
+	tmp = 0
+	for i:= range result {
+		for j:= range result[i] {
+			for k := range result[i][j] {
+				for l := range result[i][j][k] {
+					for m := range result[i][j][k][l] {
+						for n := range result[i][j][k][l][m] {
+							result[i][j][k][l][m][n] = input1D[tmp]
+							tmp++
+						}
+					}
+				}
+			}
+		}
+	}
+	return result
+}
+
 func Reshape4D(input [][][][]float64, reX int, reY int) ([][]float64) {
 	n := len(input)
 	c := len(input[0])
@@ -161,6 +236,41 @@ func Reshape4D(input [][][][]float64, reX int, reY int) ([][]float64) {
 	}
 	return result
 }
+
+func Reshape4D6D(input [][][][]float64, reN int, reC int, reH int, reW int, reX int, reY int) ([][][][][][]float64) {
+	//n, c, h, w := Shape4D(input)
+
+	var input1D []float64
+	tmp := 0
+	for i:= range input {
+		for j := range input[i] {
+			for k := range input[i][j] {
+				for l := range input[i][j][k] {
+					input1D[tmp] = input[i][j][k][l]
+					tmp++
+				}
+			}
+		}
+	}
+	result := Make6D(reN,reC,reH,reW,reX,reY)
+	tmp = 0
+	for i:= range result {
+		for j:= range result[i] {
+			for k:= range result[i][j] {
+				for l:= range result[i][j][k] {
+					for m:= range result[i][j][k][l] {
+						for n:= range result[i][j][k][l][m] {
+							result[i][j][k][l][m][n] = input1D[tmp]
+							tmp++
+						}
+					}
+				}
+			}
+		}
+	}
+	return result
+}
+
 
 func Reshape6D(input [][][][][][]float64, reX int, reY int) ([][]float64) {
 	n := len(input)
@@ -470,6 +580,54 @@ func SumCol(x [][]float64) ([][]float64) {
 		}
 	}
 	return sumArray
+}
+
+func MaxCol(x [][]float64) ([][]float64) {
+	//sum -> direction [a,a]
+	//				   [b,b]
+	n := len(x)
+	m := len(x[0])
+	maxArray := make([][]float64, n)
+	for i:=0; i<n; i++{
+		maxArray[i] = make([]float64, m)
+	}
+	for j := 0; j < n; j++ {
+		max := 0.0
+		for i := 0; i < m; i++ {
+			if x[j][i] > max {
+				max = x[j][i]
+			}
+		}
+		for i := 0; i < m; i++ {
+			maxArray[j][i] = max
+		}
+	}
+	return maxArray
+}
+
+func ArgMaxCol(x [][]float64) ([][]int) {
+	//sum -> direction [a,a]
+	//				   [b,b]
+	n := len(x)
+	m := len(x[0])
+	maxArray := make([][]int, n)
+	for i:=0; i<n; i++{
+		maxArray[i] = make([]int, m)
+	}
+	index := 0
+	for j := 0; j < n; j++ {
+		max := 0.0
+		for i := 0; i < m; i++ {
+			if x[j][i] > max {
+				max = x[j][i]
+				index = i
+			}
+		}
+		for i := 0; i < m; i++ {
+			maxArray[j][i] = index
+		}
+	}
+	return maxArray
 }
 
 func RandomArray(r int, c int, init float64) [][]float64 {
