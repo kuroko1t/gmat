@@ -630,7 +630,7 @@ func ArgMaxCol(x [][]float64) ([][]int) {
 	return maxArray
 }
 
-func RandomArray(r int, c int, init float64) [][]float64 {
+func RandomNorm2D(r int, c int, init float64) [][]float64 {
 	z := make([][]float64, r)
 	for i:=0; i<r; i++{
 		z[i] = make([]float64, c)
