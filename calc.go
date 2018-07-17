@@ -309,6 +309,12 @@ func Reshape6D(input [][][][][][]float64, reX int, reY int) ([][]float64) {
 	return result
 }
 
+func Shape2D(input [][]float64) (n int, c int) {
+	n = len(input)
+	c = len(input[0])
+	return n, c
+}
+
 func Shape4D(input [][][][]float64) (n int, c int, h int, w int) {
 	n = len(input)
 	c = len(input[0])
