@@ -2,6 +2,7 @@ package gmat
 
 import (
 	"log"
+	"math"
 	"math/rand"
 )
 
@@ -638,6 +639,19 @@ func RandomNorm2D(r int, c int, init float64) [][]float64 {
 	for i, zArray := range z {
 		for j, _ := range zArray {
 			z[i][j] = rand.NormFloat64() * init
+		}
+	}
+	return z
+}
+
+func HeNorm2D(r int, c int) [][]float64 {
+	z := make([][]float64, r)
+	for i := 0; i < r; i++ {
+		z[i] = make([]float64, c)
+	}
+	for i, zArray := range z {
+		for j, _ := range zArray {
+			z[i][j] = rand.NormFloat64() * (1 / math.Sqrt(float64(r)))
 		}
 	}
 	return z
