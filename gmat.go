@@ -4,6 +4,7 @@ import (
 	"log"
 	"math"
 	"math/rand"
+	"sync"
 )
 
 func Make(n int, m int) [][]float64 {
@@ -528,16 +529,20 @@ func Dot(x [][]float64, y [][]float64) [][]float64 {
 		z[i] = make([]float64, my)
 
 	}
-	fn := func(z [][]float64, x [][]float64, y [][]float64, zcol int, zrow int) {
+	fn := func(z [][]float64, x [][]float64, y [][]float64, zcol int, zrow int, wg *sync.WaitGroup) {
 		for i := 0; i < mx; i++ {
 			z[zcol][zrow] += x[zcol][i] * y[i][zrow]
 		}
+		wg.Done()
 	}
+	wg := new(sync.WaitGroup)
 	for zcol := 0; zcol < nx; zcol++ {
 		for zrow := 0; zrow < my; zrow++ {
-			go fn(z, x, y, zcol, zrow)
+			wg.Add(1)
+			go fn(z, x, y, zcol, zrow, wg)
 		}
 	}
+	wg.Wait()
 	return z
 }
 
