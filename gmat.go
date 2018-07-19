@@ -528,18 +528,44 @@ func Dot(x [][]float64, y [][]float64) [][]float64 {
 		z[i] = make([]float64, my)
 
 	}
-	zElem := 0.0
+	fn := func(z [][]float64, x [][]float64, y [][]float64, zcol int, zrow int) {
+		for i := 0; i < mx; i++ {
+			z[zcol][zrow] += x[zcol][i] * y[i][zrow]
+		}
+	}
 	for zcol := 0; zcol < nx; zcol++ {
 		for zrow := 0; zrow < my; zrow++ {
-			for i := 0; i < mx; i++ {
-				zElem += x[zcol][i] * y[i][zrow]
-			}
-			z[zcol][zrow] = zElem
-			zElem = 0
+			go fn(z, x, y, zcol, zrow)
 		}
 	}
 	return z
 }
+
+//func Dot(x [][]float64, y [][]float64) [][]float64 {
+// 	nx := len(x)
+// 	mx := len(x[0])
+// 	ny := len(y)
+// 	my := len(y[0])
+// 	if mx != ny {
+// 		log.Fatal("mismatch matrix number")
+// 	}
+// 	z := make([][]float64, nx)
+// 	for i := 0; i < nx; i++ {
+// 		z[i] = make([]float64, my)
+//
+// 	}
+// 	zElem := 0.0
+// 	for zcol := 0; zcol < nx; zcol++ {
+// 		for zrow := 0; zrow < my; zrow++ {
+// 			for i := 0; i < mx; i++ {
+// 				zElem += x[zcol][i] * y[i][zrow]
+// 			}
+// 			z[zcol][zrow] = zElem
+// 			zElem = 0
+// 		}
+// 	}
+// 	return z
+//}
 
 func SumRow(x [][]float64) [][]float64 {
 	//sum | direction [a,b]
