@@ -1,4 +1,4 @@
-package gmat
+package cpu
 
 import (
 	"fmt"
