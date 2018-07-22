@@ -1,9 +1,11 @@
+// +build cpu
+
 package gmat
 
 import (
-	"log"
-	"github.com/kuroko1t/gmat/data"
 	"github.com/kuroko1t/gmat/cpu"
+	"github.com/kuroko1t/gmat/data"
+	"log"
 	//"math"
 	//"math/rand"
 	//"sync"
@@ -12,13 +14,13 @@ import (
 type Data data.Data
 
 func Make2D(n int, m int) Data {
-	z := Data{}
-	z.CPU = cpu.Make2D(n,m)
+	z := Data{Shape: []int{n, m}}
+	z.CPU = cpu.Make2D(n, m)
 	return z
 }
 
 func Make2DInitArray(x [][]float64) Data {
-	z := Data{CPU:x}
+	z := Data{CPU: x}
 	z.CPU = x
 	return z
 }
@@ -330,12 +332,11 @@ func Pad4D(input [][][][]float64, pad [][]int) [][][][]float64 {
 
 func MakeInit(n int, m int, value float64) Data {
 	z := Data{}
-	z.CPU = cpu.MakeInit(n,m,value)
+	z.CPU = cpu.MakeInit(n, m, value)
 	return z
 }
 
-
-func Add(x , y Data) Data {
+func Add(x, y Data) Data {
 	z := Data{}
 	z.CPU = cpu.Add(x.CPU, y.CPU)
 	return z
@@ -347,7 +348,7 @@ func AddE(x Data, y float64) Data {
 	return z
 }
 
-func Sub(x , y Data) Data {
+func Sub(x, y Data) Data {
 	z := x
 	z.CPU = cpu.Sub(x.CPU, y.CPU)
 	return z
@@ -365,13 +366,13 @@ func MulE(x Data, y float64) Data {
 	return z
 }
 
-func Mul(x , y Data) Data {
+func Mul(x, y Data) Data {
 	z := Data{}
 	z.CPU = cpu.Mul(x.CPU, y.CPU)
 	return z
 }
 
-func Div(x , y Data) Data {
+func Div(x, y Data) Data {
 	z := Data{}
 	z.CPU = cpu.Div(x.CPU, y.CPU)
 	return z
@@ -389,7 +390,7 @@ func Apply(x Data, fn func(float64) float64) Data {
 	return z
 }
 
-func Dot(x , y Data) Data {
+func Dot(x, y Data) Data {
 	z := Data{}
 	z.CPU = cpu.Dot(x.CPU, y.CPU)
 	return z
