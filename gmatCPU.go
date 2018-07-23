@@ -4,23 +4,19 @@ package gmat
 
 import (
 	"github.com/kuroko1t/gmat/cpu"
-	"github.com/kuroko1t/gmat/data"
 	"log"
-	//"math"
-	//"math/rand"
-	//"sync"
 )
 
-type Data data.Data
+type Tensor cpu.Tensor
 
-func Make2D(n int, m int) Data {
-	z := Data{Shape: []int{n, m}}
+func Make2D(n int, m int) Tensor {
+	z := Tensor{Shape: []int{n, m}}
 	z.CPU = cpu.Make2D(n, m)
 	return z
 }
 
-func Make2DInitArray(x [][]float64) Data {
-	z := Data{CPU: x}
+func Make2DInitArray(x [][]float64) Tensor {
+	z := Tensor{CPU: x}
 	z.CPU = x
 	return z
 }
@@ -59,8 +55,8 @@ func Make6D(n int, c int, h int, w int, x int, y int) [][][][][][]float64 {
 	return z
 }
 
-func Trans2D(input Data, n int, c int) Data {
-	z := Data{}
+func Trans2D(input Tensor, n int, c int) Tensor {
+	z := Tensor{}
 	z.CPU = cpu.Trans2D(input.CPU, n, c)
 	return z
 }
@@ -201,8 +197,8 @@ func Reshape2D6D(input [][]float64, reN int, reC int, reH int, reW int, reX int,
 	return result
 }
 
-func Reshape4D(input Data, reX int, reY int) Data {
-	z := Data{}
+func Reshape4D(input Tensor, reX int, reY int) Tensor {
+	z := Tensor{}
 	z.CPU = cpu.Reshape4D(input.CPU4D, reX, reY)
 	return z
 }
@@ -278,12 +274,12 @@ func Reshape4D6D(input [][][][]float64, reN int, reC int, reH int, reW int, reX 
 // 	return result
 //}
 
-func Shape2D(x Data) (n int, c int) {
+func Shape2D(x Tensor) (n int, c int) {
 	n, c = cpu.Shape2D(x.CPU)
 	return n, c
 }
 
-func Shape4D(input Data) (n int, c int, h int, w int) {
+func Shape4D(input Tensor) (n int, c int, h int, w int) {
 	n, c, h, w = cpu.Shape4D(input.CPU4D)
 	return n, c, h, w
 }
@@ -330,112 +326,112 @@ func Pad4D(input [][][][]float64, pad [][]int) [][][][]float64 {
 	return z
 }
 
-func MakeInit(n int, m int, value float64) Data {
-	z := Data{}
+func MakeInit(n int, m int, value float64) Tensor {
+	z := Tensor{}
 	z.CPU = cpu.MakeInit(n, m, value)
 	return z
 }
 
-func Add(x, y Data) Data {
-	z := Data{}
+func Add(x, y Tensor) Tensor {
+	z := Tensor{}
 	z.CPU = cpu.Add(x.CPU, y.CPU)
 	return z
 }
 
-func AddE(x Data, y float64) Data {
-	z := Data{}
+func AddE(x Tensor, y float64) Tensor {
+	z := Tensor{}
 	z.CPU = cpu.AddE(x.CPU, y)
 	return z
 }
 
-func Sub(x, y Data) Data {
+func Sub(x, y Tensor) Tensor {
 	z := x
 	z.CPU = cpu.Sub(x.CPU, y.CPU)
 	return z
 }
 
-func SubE(x Data, y float64) Data {
-	z := Data{}
+func SubE(x Tensor, y float64) Tensor {
+	z := Tensor{}
 	z.CPU = cpu.SubE(x.CPU, y)
 	return z
 }
 
-func MulE(x Data, y float64) Data {
-	z := Data{}
+func MulE(x Tensor, y float64) Tensor {
+	z := Tensor{}
 	z.CPU = cpu.MulE(x.CPU, y)
 	return z
 }
 
-func Mul(x, y Data) Data {
-	z := Data{}
+func Mul(x, y Tensor) Tensor {
+	z := Tensor{}
 	z.CPU = cpu.Mul(x.CPU, y.CPU)
 	return z
 }
 
-func Div(x, y Data) Data {
-	z := Data{}
+func Div(x, y Tensor) Tensor {
+	z := Tensor{}
 	z.CPU = cpu.Div(x.CPU, y.CPU)
 	return z
 }
 
-func T(x Data) Data {
-	z := Data{}
+func T(x Tensor) Tensor {
+	z := Tensor{}
 	z.CPU = cpu.T(x.CPU)
 	return z
 }
 
-func Apply(x Data, fn func(float64) float64) Data {
-	z := Data{}
+func Apply(x Tensor, fn func(float64) float64) Tensor {
+	z := Tensor{}
 	z.CPU = cpu.Apply(x.CPU, fn)
 	return z
 }
 
-func Dot(x, y Data) Data {
-	z := Data{}
+func Dot(x, y Tensor) Tensor {
+	z := Tensor{}
 	z.CPU = cpu.Dot(x.CPU, y.CPU)
 	return z
 }
 
-func SumRow(x Data) Data {
+func SumRow(x Tensor) Tensor {
 	//sum | direction [a,b]
 	//    ^           [a,b]
-	z := Data{}
+	z := Tensor{}
 	z.CPU = cpu.SumRow(x.CPU)
 	return z
 }
 
-func SumCol(x Data) Data {
+func SumCol(x Tensor) Tensor {
 	//sum -> direction [a,a]
 	//				   [b,b]
-	z := Data{}
+	z := Tensor{}
 	z.CPU = cpu.SumCol(x.CPU)
 	return z
 }
 
-func MaxCol(x Data) Data {
+func MaxCol(x Tensor) Tensor {
 	//sum -> direction [a,a]
 	//				   [b,b]
-	z := Data{}
+	z := Tensor{}
 	z.CPU = cpu.MaxCol(x.CPU)
 	return z
 }
 
-func ArgMaxCol(x Data) [][]int {
+func ArgMaxCol(x Tensor) [][]int {
 	//sum -> direction [a,a]
 	//				   [b,b]
-	//z := Data{}
+	//z := Tensor{}
 	maxArray := cpu.ArgMaxCol(x.CPU)
 	return maxArray
 }
 
-func RandomNorm2D(r int, c int, init float64) Data {
-	z := Data{}
+func RandomNorm2D(r int, c int, init float64) Tensor {
+	z := Tensor{}
 	z.CPU = cpu.RandomNorm2D(r, c, init)
 	return z
 }
 
-func HeNorm2D(r int, c int) Data {
-	z := Data{}
+func HeNorm2D(r int, c int) Tensor {
+	z := Tensor{}
 	z.CPU = cpu.HeNorm2D(r, c)
 	return z
 }

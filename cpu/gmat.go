@@ -6,6 +6,12 @@ import (
 	"math/rand"
 )
 
+type Tensor struct {
+	CPU   [][]float64
+	CPU4D [][][][]float64
+	Shape []int
+}
+
 func Make2D(n int, m int) [][]float64 {
 	z := make([][]float64, n)
 	for i := 0; i < n; i++ {
@@ -374,7 +380,6 @@ func MakeInit(n int, m int, value float64) [][]float64 {
 	return z
 }
 
-
 func Add(x [][]float64, y [][]float64) [][]float64 {
 	n := len(x)
 	m := len(x[0])
@@ -518,9 +523,9 @@ func Apply(x [][]float64, fn func(float64) float64) [][]float64 {
 	return z
 }
 
-func Dot(x , y [][]float64) [][]float64 {
-	nx , mx := Shape2D(x)
-	ny , my := Shape2D(y)
+func Dot(x, y [][]float64) [][]float64 {
+	nx, mx := Shape2D(x)
+	ny, my := Shape2D(y)
 	//fmt.Println(mx,nx,ny)
 	//cpuprofile := "mycpu.prof"
 	//f, err := os.Create(cpuprofile)

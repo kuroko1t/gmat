@@ -10,14 +10,15 @@ package gpu
 import "C"
 import "unsafe"
 
-//import (
-// 	"github.com/kuroko1t/gmat/data"
-//)
-
-//type Data data.Data
-
 type Handle struct {
 	cublasHandle C.cublasHandle_t
+}
+
+type Tensor struct {
+	CPU   [][]float64
+	CPU4D [][][][]float64
+	GPU   *C.float
+	Shape []int
 }
 
 func (handle *Handle) Make2D(m, n int) *C.float {

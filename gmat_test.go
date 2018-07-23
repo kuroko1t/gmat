@@ -3,9 +3,10 @@
 package gmat
 
 import (
-	"github.com/kuroko1t/gmat/cpu"
-	"github.com/kuroko1t/gmat/data"
-	"github.com/kuroko1t/gmat/gpu"
+	//"github.com/kuroko1t/gmat/cpu"
+	//"github.com/kuroko1t/gmat/data"
+	//"github.com/kuroko1t/gmat/gpu"
+	//"github.com/kuroko1t/gmat"
 	"log"
 	//"math"
 	//"math/rand"
