@@ -9,6 +9,7 @@ package gpu
 // #include </usr/include/cudnn.h>
 import "C"
 import "unsafe"
+import "fmt"
 
 type Handle struct {
 	cublasHandle C.cublasHandle_t
@@ -21,16 +22,51 @@ type Tensor struct {
 	Shape []int
 }
 
-func (handle *Handle) Make2D(m, n int) *C.float {
+func (handle *Handle) Malloc2D(n, m int) *C.float {
 	var z *C.float
 	gpuptr := unsafe.Pointer(z)
 	typeSize := int(unsafe.Sizeof(float32(0)))
-	C.cudaMalloc(&gpuptr, C.size_t(m*n*typeSize))
+	gpuSize := C.size_t(m * n * typeSize)
+	fmt.Println("malloc gpuSize", gpuSize)
+	C.cudaMalloc(&gpuptr, gpuSize)
 	return (*C.float)(gpuptr)
 }
 
+func (handle *Handle) CopyH2D(x [][]float64) (int, int, *C.float) {
+	n := len(x)
+	m := len(x[0])
+	var z *C.float
+	gpuptr := unsafe.Pointer(z)
+	typeSize := int(unsafe.Sizeof(float32(0)))
+	//fmt.Println("typeSize", typeSize)
+	gpuSize := C.size_t(m * n * typeSize)
+	fmt.Println("n,m:", n, ",", m, "h2d gpuSize:", gpuSize, "typeSize:", typeSize)
+	C.cudaMalloc(&gpuptr, gpuSize)
+	x32 := d2f(x)
+	C.cudaMemcpy(gpuptr, unsafe.Pointer(&x32[0]), gpuSize, C.cudaMemcpyHostToDevice)
+	return n, m, (*C.float)(gpuptr)
+}
+
+func (handle *Handle) CopyD2H(shape []int, gpuptr *C.float) [][]float64 {
+	fmt.Println("cpy d2h shape", shape)
+	n := shape[0]
+	m := shape[1]
+	z := make([][]float32, n*m)
+	//for i := 0; i < n; i++ {
+	// 	z[i] = make([]float32, m)
+	//}
+	typeSize := int(unsafe.Sizeof(float32(0)))
+	fmt.Println("n,m:", n, ",", m, "typeSize:", typeSize)
+	cudaCheck(C.cudaMemcpy(unsafe.Pointer(&z[0]),
+		unsafe.Pointer(gpuptr),
+		C.size_t(n*m*typeSize), C.cudaMemcpyDeviceToHost))
+	z64 := f2d(z)
+	fmt.Println("cpy d2h", z)
+	return z64
+}
+
 func (handle *Handle) Dot(x, y *C.float, m, n, k int) *C.float {
-	z := handle.Make2D(m, n)
+	z := handle.Malloc2D(m, n)
 	if handle.cublasHandle == nil {
 		handle.cublasHandle = cublaInit()
 	}

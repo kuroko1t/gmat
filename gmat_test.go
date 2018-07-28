@@ -4,13 +4,15 @@ package gmat
 
 import (
 	//"github.com/kuroko1t/gmat/cpu"
-	//"github.com/kuroko1t/gmat/data"
 	//"github.com/kuroko1t/gmat/gpu"
+	//"github.com/kuroko1t/gmat/data"
 	//"github.com/kuroko1t/gmat"
-	"log"
+	//"log"
 	//"math"
 	//"math/rand"
 	//"sync"
+	"fmt"
+	"testing"
 )
 
 func ExpCheck(zReal [][]float64, zExp [][]float64, t *testing.T) {
@@ -45,6 +47,17 @@ func TestDotSuccess(t *testing.T) {
 		{69, 54},
 		{114, 90},
 	}
-	zReal := Dot(xdot, ydot)
+	//zReal := cpu.Dot(xdot, ydot)
+	// test GPU
+	fmt.Println(xdot)
+	xdotGPU := CopyH2D(xdot)
+	CopyD2H(&xdotGPU)
+	fmt.Println("xdot", xdotGPU.CPU)
+	ydotGPU := CopyH2D(ydot)
+	zRealGPU := Dot(xdotGPU, ydotGPU)
+	CopyD2H(&zRealGPU)
+	zReal := zRealGPU.CPU
+	fmt.Println(zReal)
 	ExpCheck(zReal, zExp, t)
+	//ExpCheck(zRealGPU, zExp, t)
 }

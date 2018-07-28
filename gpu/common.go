@@ -13,6 +13,36 @@ import "C"
 import "fmt"
 import "runtime"
 
+func d2f(x [][]float64) []float32 {
+	n := len(x)
+	m := len(x[0])
+	z := make([]float32, n)
+	//for i := 0; i < n; i++ {
+	// 	z[i] = make([]float32, m)
+	//}
+	for i := range x {
+		for j := range x[i] {
+			z[(i+1)*j] = float32(x[i][j])
+		}
+	}
+	return z
+}
+
+func f2d(x []float32) [][]float64 {
+	n := len(x)
+	m := len(x[0])
+	z := make([][]float64, n)
+	for i := 0; i < n; i++ {
+		z[i] = make([]float64, m)
+	}
+	for i := range z {
+		for j := range z[i] {
+			z[i][j] = float64(x[i][j])
+		}
+	}
+	return z
+}
+
 func cublaInit() C.cublasHandle_t {
 	var cublasHandle C.cublasHandle_t
 	cublasCheck(C.cublasCreate(&cublasHandle))
