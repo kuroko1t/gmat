@@ -12,32 +12,31 @@ import "C"
 //import "unsafe"
 import "fmt"
 import "runtime"
+import "log"
 
 func d2f(x [][]float64) []float32 {
 	n := len(x)
 	m := len(x[0])
-	z := make([]float32, n)
-	//for i := 0; i < n; i++ {
-	// 	z[i] = make([]float32, m)
-	//}
-	for i := range x {
-		for j := range x[i] {
-			z[(i+1)*j] = float32(x[i][j])
+	z := make([]float32, n*m)
+	for i := 0; i < m; i++ {
+		for j := 0; j < n; j++ {
+			z[j+i*n] = float32(x[j][i])
 		}
 	}
 	return z
 }
 
-func f2d(x []float32) [][]float64 {
-	n := len(x)
-	m := len(x[0])
+func f2d(x []float32, n, m int) [][]float64 {
+	if len(x) != n*m {
+		log.Fatal("not match shape float ,double slice")
+	}
 	z := make([][]float64, n)
 	for i := 0; i < n; i++ {
 		z[i] = make([]float64, m)
 	}
-	for i := range z {
-		for j := range z[i] {
-			z[i][j] = float64(x[i][j])
+	for i := 0; i < m; i++ {
+		for j := 0; j < n; j++ {
+			z[j][i] = float64(x[j+i*n])
 		}
 	}
 	return z
@@ -65,17 +64,4 @@ func cublasCheck(error C.cublasStatus_t) {
 		_, file, line, _ := runtime.Caller(1)
 		fmt.Println(file, line)
 	}
-}
-
-func cuDot(handle C.cublasHandle_t, m, n, k C.int, A_dev, B_dev, C_dev *C.float) {
-	var alpha C.float = 1
-	var beta C.float = 1
-	cublasCheck(C.cublasSgemm(handle,
-		C.CUBLAS_OP_N, C.CUBLAS_OP_N,
-		m, n, k,
-		&alpha,
-		A_dev, m,
-		B_dev, k,
-		&beta,
-		C_dev, m))
 }

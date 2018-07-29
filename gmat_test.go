@@ -3,14 +3,6 @@
 package gmat
 
 import (
-	//"github.com/kuroko1t/gmat/cpu"
-	//"github.com/kuroko1t/gmat/gpu"
-	//"github.com/kuroko1t/gmat/data"
-	//"github.com/kuroko1t/gmat"
-	//"log"
-	//"math"
-	//"math/rand"
-	//"sync"
 	"fmt"
 	"testing"
 )
@@ -47,17 +39,81 @@ func TestDotSuccess(t *testing.T) {
 		{69, 54},
 		{114, 90},
 	}
-	//zReal := cpu.Dot(xdot, ydot)
-	// test GPU
-	fmt.Println(xdot)
 	xdotGPU := CopyH2D(xdot)
-	CopyD2H(&xdotGPU)
-	fmt.Println("xdot", xdotGPU.CPU)
 	ydotGPU := CopyH2D(ydot)
 	zRealGPU := Dot(xdotGPU, ydotGPU)
 	CopyD2H(&zRealGPU)
 	zReal := zRealGPU.CPU
-	fmt.Println(zReal)
 	ExpCheck(zReal, zExp, t)
-	//ExpCheck(zRealGPU, zExp, t)
+}
+
+func TestTDotSuccess(t *testing.T) {
+	xdot := [][]float64{
+		{1, 4, 7},
+		{2, 5, 8},
+		{3, 6, 9},
+	}
+	ydot := [][]float64{
+		{8, 7},
+		{5, 4},
+		{2, 1},
+	}
+	zExp := [][]float64{
+		{24, 18},
+		{69, 54},
+		{114, 90},
+	}
+	xdotGPU := CopyH2D(xdot)
+	ydotGPU := CopyH2D(ydot)
+	zRealGPU := TDot(xdotGPU, ydotGPU)
+	CopyD2H(&zRealGPU)
+	zReal := zRealGPU.CPU
+	ExpCheck(zReal, zExp, t)
+}
+
+func TestDotTSuccess(t *testing.T) {
+	xdot := [][]float64{
+		{1, 2, 3},
+		{4, 5, 6},
+		{7, 8, 9},
+	}
+	ydot := [][]float64{
+		{8, 5, 2},
+		{7, 4, 1},
+	}
+	zExp := [][]float64{
+		{24, 18},
+		{69, 54},
+		{114, 90},
+	}
+	xdotGPU := CopyH2D(xdot)
+	ydotGPU := CopyH2D(ydot)
+	zRealGPU := DotT(xdotGPU, ydotGPU)
+	CopyD2H(&zRealGPU)
+	zReal := zRealGPU.CPU
+	ExpCheck(zReal, zExp, t)
+}
+
+func TestAddSuccess(t *testing.T) {
+	xdot := [][]float64{
+		{1, 2},
+		{4, 5},
+		{7, 8},
+	}
+	ydot := [][]float64{
+		{8, 7},
+		{5, 4},
+		{2, 1},
+	}
+	zExp := [][]float64{
+		{9, 9},
+		{9, 9},
+		{9, 9},
+	}
+	xdotGPU := CopyH2D(xdot)
+	ydotGPU := CopyH2D(ydot)
+	zRealGPU := Add(xdotGPU, ydotGPU)
+	CopyD2H(&zRealGPU)
+	zReal := zRealGPU.CPU
+	ExpCheck(zReal, zExp, t)
 }
