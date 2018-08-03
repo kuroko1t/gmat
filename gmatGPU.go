@@ -72,3 +72,9 @@ func Add(x, y Tensor) (z Tensor) {
 	z.Shape = []int{mx, nx}
 	return z
 }
+
+func SumRow(x Tensor) (z Tensor) {
+	z.GPU = handle.SumRow(x.GPU, x.Shape)
+	z.Shape = x.Shape
+	return z
+}
