@@ -1,3 +1,17 @@
+// Copyright 2018 kurosawa. All Rights Reserved.
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//     http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+// =============================================================================
 package cpu
 
 import (
@@ -159,18 +173,40 @@ func TestDotSuccess(t *testing.T) {
 func TestSumRowSuccess(t *testing.T) {
 	zExp := [][]float64{
 		{12, 15, 18},
-		{12, 15, 18},
-		{12, 15, 18},
 	}
 	zReal := SumRow(x)
 	ExpCheck(zReal, zExp, t)
 }
 
+func TestCastSuccess(t *testing.T) {
+	z1 := [][]float64{
+		{12, 15, 18},
+	}
+	z1Exp := [][]float64{
+		{12, 15, 18},
+		{12, 15, 18},
+	}
+	z1Real := Cast(z1, 2)
+	ExpCheck(z1Real, z1Exp, t)
+	z2 := [][]float64{
+		{12},
+		{15},
+		{18},
+	}
+	z2Exp := [][]float64{
+		{12, 12, 12},
+		{15, 15, 15},
+		{18, 18, 18},
+	}
+	z2Real := Cast(z2, 3)
+	ExpCheck(z2Real, z2Exp, t)
+}
+
 func TestSumColSuccess(t *testing.T) {
 	zExp := [][]float64{
-		{6, 6, 6},
-		{15, 15, 15},
-		{24, 24, 24},
+		{6},
+		{15},
+		{24},
 	}
 	zReal := SumCol(x)
 	ExpCheck(zReal, zExp, t)

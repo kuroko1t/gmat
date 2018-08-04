@@ -1,3 +1,17 @@
+// Copyright 2018 kurosawa. All Rights Reserved.
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//     http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+// =============================================================================
 package cpu
 
 import (
@@ -555,20 +569,14 @@ func Dot(x, y [][]float64) [][]float64 {
 func SumRow(x [][]float64) [][]float64 {
 	//sum | direction [a,b]
 	//    ^           [a,b]
-	n := len(x)
-	m := len(x[0])
-	sumArray := make([][]float64, n)
-	for i := 0; i < n; i++ {
-		sumArray[i] = make([]float64, m)
-	}
-	for j := 0; j < m; j++ {
-		sumValue := float64(0.0)
-		for i := 0; i < n; i++ {
+	m, n := Shape2D(x)
+	sumArray := Make2D(1, n)
+	for j := 0; j < n; j++ {
+		sumValue := 0.0
+		for i := 0; i < m; i++ {
 			sumValue += x[i][j]
 		}
-		for i := 0; i < n; i++ {
-			sumArray[i][j] = sumValue
-		}
+		sumArray[0][j] = sumValue
 	}
 	return sumArray
 }
@@ -576,22 +584,36 @@ func SumRow(x [][]float64) [][]float64 {
 func SumCol(x [][]float64) [][]float64 {
 	//sum -> direction [a,a]
 	//				   [b,b]
-	n := len(x)
-	m := len(x[0])
-	sumArray := make([][]float64, n)
-	for i := 0; i < n; i++ {
-		sumArray[i] = make([]float64, m)
-	}
-	for j := 0; j < n; j++ {
-		sumValue := float64(0.0)
-		for i := 0; i < m; i++ {
+	m, n := Shape2D(x)
+	sumArray := Make2D(m, 1)
+	for j := 0; j < m; j++ {
+		sumValue := 0.0
+		for i := 0; i < n; i++ {
 			sumValue += x[j][i]
 		}
-		for i := 0; i < m; i++ {
-			sumArray[j][i] = sumValue
-		}
+		sumArray[j][0] = sumValue
 	}
 	return sumArray
+}
+
+func Cast(x [][]float64, castSize int) [][]float64 {
+	m, n := Shape2D(x)
+	if (m != 1) && (n != 1) {
+		log.Fatal("Cast.not support format")
+	}
+	if m == 1 {
+		for i := 0; i < castSize; i++ {
+			x = append(x, x[0])
+		}
+	}
+	if n == 1 {
+		for i := 0; i < castSize-1; i++ {
+			for i := 0; i < m; i++ {
+				x[i] = append(x[i], x[i][0])
+			}
+		}
+	}
+	return x
 }
 
 func MaxCol(x [][]float64) [][]float64 {

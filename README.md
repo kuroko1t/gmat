@@ -1,5 +1,5 @@
-# gdeep
-matrix library
+# gmat
+golang matrix library
 
 # Sample
 
