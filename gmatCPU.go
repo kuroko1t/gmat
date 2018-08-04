@@ -26,12 +26,14 @@ type Tensor cpu.Tensor
 func Make2D(n int, m int) Tensor {
 	z := Tensor{Shape: []int{n, m}}
 	z.CPU = cpu.Make2D(n, m)
+	z.Shape = []int{n, m}
 	return z
 }
 
 func Make2DInitArray(x [][]float64) Tensor {
 	z := Tensor{CPU: x}
 	z.CPU = x
+	z.Shape = []int{len(x), len(x[0])}
 	return z
 }
 
@@ -72,6 +74,7 @@ func Make6D(n int, c int, h int, w int, x int, y int) [][][][][][]float64 {
 func Trans2D(input Tensor, n int, c int) Tensor {
 	z := Tensor{}
 	z.CPU = cpu.Trans2D(input.CPU, n, c)
+	z.Shape = []int{n, c}
 	return z
 }
 
@@ -349,6 +352,7 @@ func MakeInit(n int, m int, value float64) Tensor {
 func Add(x, y Tensor) Tensor {
 	z := Tensor{}
 	z.CPU = cpu.Add(x.CPU, y.CPU)
+	z.Shape = x.Shape
 	return z
 }
 

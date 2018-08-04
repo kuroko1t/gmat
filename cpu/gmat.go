@@ -395,9 +395,8 @@ func MakeInit(n int, m int, value float64) [][]float64 {
 }
 
 func Add(x [][]float64, y [][]float64) [][]float64 {
-	n := len(x)
-	m := len(x[0])
-	z := Make2D(n, m)
+	m, n := Shape2D(x)
+	z := Make2D(m, n)
 	//fn := func(i int, j int, wg *sync.WaitGroup) {
 	// 	z[i][j] = x[i][j] + y[i][j]
 	// 	wg.Done()
