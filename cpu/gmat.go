@@ -553,9 +553,9 @@ func Dot(x, y [][]float64) [][]float64 {
 	wg := &sync.WaitGroup{}
 	ch := make(chan int, numcpu())
 	fn := func(col int, z [][]float64, wg *sync.WaitGroup) {
-		for zrow := 0; zrow < my; zrow++ {
-			for i := 0; i < mx; i++ {
-				z[col][zrow] += x[col][i] * y[i][zrow]
+		for i := 0; i < mx; i++ {
+			for j := 0; j < my; j++ {
+				z[col][j] += x[col][i] * y[i][j]
 			}
 		}
 		ch <- 1
