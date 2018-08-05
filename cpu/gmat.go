@@ -18,7 +18,14 @@ import (
 	"log"
 	"math"
 	"math/rand"
+	"runtime"
+	"sync"
 )
+
+func numcpu() int {
+	cpus := runtime.NumCPU()
+	return cpus
+}
 
 type Tensor struct {
 	CPU   [][]float64
@@ -539,29 +546,29 @@ func Apply(x [][]float64, fn func(float64) float64) [][]float64 {
 func Dot(x, y [][]float64) [][]float64 {
 	nx, mx := Shape2D(x)
 	ny, my := Shape2D(y)
-	//fmt.Println(mx,nx,ny)
-	//cpuprofile := "mycpu.prof"
-	//f, err := os.Create(cpuprofile)
-	//if err != nil {
-	// 	log.Fatal(err)
-	//}
-	//pprof.StartCPUProfile(f)
-	//defer pprof.StopCPUProfile()
 	if mx != ny {
-		log.Fatal("mismatch matrix number")
+		log.Fatal("Dot.mismatch matrix number")
 	}
 	z := Make2D(nx, my)
-	//wg := &sync.WaitGroup{}
-	//wg.Add(mx*my*nx)
-	//ch := make(chan int, 3)
-	for zcol := 0; zcol < nx; zcol++ {
+	wg := &sync.WaitGroup{}
+	ch := make(chan int, numcpu())
+	fn := func(col int, z [][]float64, wg *sync.WaitGroup) {
 		for zrow := 0; zrow < my; zrow++ {
 			for i := 0; i < mx; i++ {
-				z[zcol][zrow] += x[zcol][i] * y[i][zrow]
+				z[col][zrow] += x[col][i] * y[i][zrow]
 			}
-
 		}
+		ch <- 1
+		defer func() {
+			<-ch
+			wg.Done()
+		}()
 	}
+	for zcol := 0; zcol < nx; zcol++ {
+		wg.Add(1)
+		go fn(zcol, z, wg)
+	}
+	wg.Wait()
 	return z
 }
 
