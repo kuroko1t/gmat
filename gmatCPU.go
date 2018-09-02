@@ -254,6 +254,19 @@ func Reshape4D6D(input [][][][]float64, reN int, reC int, reH int, reW int, reX 
 	return result
 }
 
+func Reshape2D1D(x Tensor) []float64 {
+	y := cpu.Reshape2D1D(x.CPU)
+	return y
+}
+
+func Reshape1D2D(x []float64, n,c int) Tensor {
+	z := Tensor{}
+	z.Shape = []int{n,c}
+	z.CPU = cpu.Reshape1D2D(x, n, c)
+	return z
+}
+
+
 //func Reshape6D(input [][][][][][]float64, reX int, reY int) [][]float64 {
 // 	n := len(input)
 // 	c := len(input[0])
@@ -376,7 +389,8 @@ func SubE(x Tensor, y float64) Tensor {
 
 func MulE(x Tensor, y float64) Tensor {
 	z := Tensor{}
-	z.CPU = cpu.MulE(x.CPU, y)
+	mule := cpu.MulE(x.CPU, y)
+	z.CPU = mule
 	return z
 }
 

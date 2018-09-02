@@ -20,6 +20,7 @@ import (
 	"math/rand"
 	"runtime"
 	"sync"
+	//"fmt"
 )
 
 func numcpu() int {
@@ -199,6 +200,37 @@ func Reshape2D2D(input [][]float64, reX int, reY int) [][]float64 {
 	}
 	return result
 }
+
+func Reshape2D1D(input [][]float64) []float64 {
+	n ,c := Shape2D(input)
+	input1D := make([]float64, n*c)
+	//var input1D []float64
+	tmp := 0
+	for i := range input {
+		for j := range input[i] {
+			input1D[tmp] = input[i][j]
+			tmp++
+		}
+	}
+	return input1D
+}
+
+func Reshape1D2D(input []float64, n, c int) [][]float64 {
+	input2D := Make2D(n, c)
+	if len(input) != n *c {
+		log.Fatal("gmat.Reshape2D1D worng shape!!")
+	}
+	//var input1D []float64
+	tmp := 0
+	for i := range input2D {
+		for j := range input2D[i] {
+			input2D[i][j] = input[tmp]
+			tmp++
+		}
+	}
+	return input2D
+}
+
 
 func Reshape2D6D(input [][]float64, reN int, reC int, reH int, reW int, reX int, reY int) [][][][][][]float64 {
 	var input1D []float64
