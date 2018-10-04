@@ -154,13 +154,12 @@ func (handle *Handle) SumRow(x *C.float, shape []int) *C.float {
 	var offset C.size_t = 0
 	for i := 0; i < n; i++ {
 		fmt.Println(offset)
-		xoffset := (*C.float)(unsafe.Pointer((uintptr(offset) + uintptr(unsafe.Pointer(x)))))
-		//xoffset := x[offset]
+		//xoffset := (*C.float)(unsafe.Pointer((uintptr(offset) + uintptr(unsafe.Pointer(x)))))
 		zoffset := uintptr(offset) + uintptr(unsafe.Pointer(z))
+		//inc := (C.int)(uintptr((C.size_t)(m)) * unsafe.Sizeof(float32(0)))
 		cublasCheck(C.cublasSasum(handle.cublasHandle,
-			C.int(m),
-			xoffset, 1, sumval,
-		))
+			C.int(n),
+			x , C.int(m), sumval))
 		for i := 0; i < m; i++ {
 			zoffset_sum := unsafe.Pointer(zoffset + unsafe.Sizeof(float32(0)))
 			C.cudaMemcpy(zoffset_sum, unsafe.Pointer(sumval),
