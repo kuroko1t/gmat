@@ -24,7 +24,7 @@ package gpu
 // #include </usr/include/cudnn.h>
 import "C"
 import "unsafe"
-import "fmt"
+//import "fmt"
 
 type Handle struct {
 	cublasHandle C.cublasHandle_t
@@ -140,31 +140,28 @@ func (handle *Handle) Add(x, y *C.float, n int) *C.float {
 }
 
 func (handle *Handle) SumRow(x *C.float, shape []int) *C.float {
+	//sum | direction [a,b]
+	//    ^           [a,b]
 	m := shape[0]
 	n := shape[1]
-	z := handle.Malloc(n)
-	sumval := handle.Malloc(1)
+	z := handle.Malloc(m*n)
 	if handle.cublasHandle == nil {
 		handle.cublasHandle = cublaInit()
 	}
-	//cublasCheck(C.cublasSasum(handle.cublasHandle,
-	// 	C.int(m),
-	// 	x, 1, sumval,
-	//))
+	hostSum := make([]float32, m)
+	var tmp C.float
 	var offset C.size_t = 0
 	for i := 0; i < n; i++ {
-		fmt.Println(offset)
-		//xoffset := (*C.float)(unsafe.Pointer((uintptr(offset) + uintptr(unsafe.Pointer(x)))))
-		zoffset := uintptr(offset) + uintptr(unsafe.Pointer(z))
-		//inc := (C.int)(uintptr((C.size_t)(m)) * unsafe.Sizeof(float32(0)))
+		xoffset := (*C.float)(unsafe.Pointer((uintptr(offset) + uintptr(unsafe.Pointer(x)))))
+		zoffset := unsafe.Pointer((uintptr(offset) + uintptr(unsafe.Pointer(z))))
 		cublasCheck(C.cublasSasum(handle.cublasHandle,
-			C.int(n),
-			x , C.int(m), sumval))
+			C.int(m),
+			xoffset , C.int(1), &tmp))
 		for i := 0; i < m; i++ {
-			zoffset_sum := unsafe.Pointer(zoffset + unsafe.Sizeof(float32(0)))
-			C.cudaMemcpy(zoffset_sum, unsafe.Pointer(sumval),
-				(C.size_t)(unsafe.Sizeof(float32(0))), C.cudaMemcpyDeviceToDevice)
+			hostSum[i] = float32(tmp)
 		}
+		C.cudaMemcpy(zoffset, unsafe.Pointer(&hostSum[0]),
+			(C.size_t)(unsafe.Sizeof(float32(0))* uintptr(m)), C.cudaMemcpyHostToDevice)
 		offset += (C.size_t)(uintptr((C.size_t)(m)) * unsafe.Sizeof(float32(0)))
 	}
 	return z
