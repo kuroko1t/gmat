@@ -150,3 +150,22 @@ func TestSumRowSuccess(t *testing.T) {
 	zReal := zRealGPU.CPU
 	ExpCheck(zReal, zExp, t)
 }
+
+func TestSumColSuccess(t *testing.T) {
+	zExp := [][]float64{
+		{6, 6, 6},
+		{15, 15, 15},
+		{24, 24, 24},
+	}
+	x := [][]float64{
+		{1, 2, 3},
+		{4, 5, 6},
+		{7, 8, 9},
+		// 12 ,15, 18
+	}
+	xGPU := CopyH2D(x)
+	zRealGPU := SumCol(xGPU)
+	CopyD2H(&zRealGPU)
+	zReal := zRealGPU.CPU
+	ExpCheck(zReal, zExp, t)
+}

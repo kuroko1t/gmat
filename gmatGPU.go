@@ -92,3 +92,9 @@ func SumRow(x Tensor) (z Tensor) {
 	z.Shape = x.Shape
 	return z
 }
+
+func SumCol(x Tensor) (z Tensor) {
+	z.GPU = handle.SumCol(x.GPU, x.Shape)
+	z.Shape = x.Shape
+	return z
+}

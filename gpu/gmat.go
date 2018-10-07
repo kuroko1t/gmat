@@ -166,3 +166,31 @@ func (handle *Handle) SumRow(x *C.float, shape []int) *C.float {
 	}
 	return z
 }
+
+func (handle *Handle) SumCol(x *C.float, shape []int) *C.float {
+	//sum | direction [a,b]
+	//    ^           [a,b]
+	m := shape[0]
+	n := shape[1]
+	z := handle.Malloc(m*n)
+	if handle.cublasHandle == nil {
+		handle.cublasHandle = cublaInit()
+	}
+	hostSum := make([]float32, m)
+	var tmp C.float
+	var offset C.size_t = 0
+	for i := 0; i < m; i++ {
+		xoffset := (*C.float)(unsafe.Pointer((uintptr(offset) + uintptr(unsafe.Pointer(x)))))
+		cublasCheck(C.cublasSasum(handle.cublasHandle,
+			C.int(n),
+			xoffset , C.int(m), &tmp))
+		hostSum[i] = float32(tmp)
+		offset += (C.size_t)(unsafe.Sizeof(float32(0)))
+	}
+	for i := 0; i < n; i++ {
+		hostSum = append(hostSum, hostSum...)
+	}
+	C.cudaMemcpy(unsafe.Pointer(z), unsafe.Pointer(&hostSum[0]),
+		(C.size_t)(unsafe.Sizeof(float32(0))* uintptr(n*m)), C.cudaMemcpyHostToDevice)
+	return z
+}
