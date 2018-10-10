@@ -169,3 +169,100 @@ func TestSumColSuccess(t *testing.T) {
 	zReal := zRealGPU.CPU
 	ExpCheck(zReal, zExp, t)
 }
+
+func TestMulSuccess(t *testing.T) {
+	x := [][]float64{
+		{1, 2, 3},
+		{4, 5, 6},
+		{7, 8, 9},
+	}
+	y := [][]float64{
+		{1, 3, 2},
+		{1, 3, 2},
+		{1, 3, 2},
+	}
+	zExp := [][]float64{
+		{1, 6, 6},
+		{4, 15, 12},
+		{7, 24, 18},
+	}
+	xGPU := CopyH2D(x)
+	yGPU := CopyH2D(y)
+	zRealGPU := Mul(xGPU, yGPU)
+	CopyD2H(&zRealGPU)
+	zReal := zRealGPU.CPU
+	ExpCheck(zReal, zExp, t)
+}
+
+func TestMulESuccess(t *testing.T) {
+	x := [][]float64{
+		{1, 2, 3},
+		{4, 5, 6},
+		{7, 8, 9},
+	}
+	y := 4.0
+	zExp := [][]float64{
+		{4, 8, 12},
+		{16, 20, 24},
+		{28, 32, 36},
+	}
+	xGPU := CopyH2D(x)
+	zRealGPU := MulE(xGPU, y)
+	CopyD2H(&zRealGPU)
+	zReal := zRealGPU.CPU
+	ExpCheck(zReal, zExp, t)
+}
+
+func TestDivSuccess(t *testing.T) {
+	var x = [][]float64{
+		{4, 6, 8},
+		{4, 6, 8},
+		{4, 6, 8},
+	}
+	var y = [][]float64{
+		{2, 3, 4},
+		{2, 3, 4},
+		{2, 3, 4},
+	}
+	zExp := [][]float64{
+		{2, 2, 2},
+		{2, 2, 2},
+		{2, 2, 2},
+	}
+	xGPU := CopyH2D(x)
+	yGPU := CopyH2D(y)
+	zRealGPU := Div(xGPU, yGPU)
+	CopyD2H(&zRealGPU)
+	zReal := zRealGPU.CPU
+	ExpCheck(zReal, zExp, t)
+}
+
+func TestCastSuccess(t *testing.T) {
+	x1 := [][]float64{
+		{12, 15, 18},
+	}
+	z1Exp := [][]float64{
+		{12, 15, 18},
+		{12, 15, 18},
+	}
+	x1GPU := CopyH2D(x1)
+	z1RealGPU := Cast(x1GPU, 2)
+	CopyD2H(&z1RealGPU)
+	z1Real := z1RealGPU.CPU
+	ExpCheck(z1Real, z1Exp, t)
+	x2 := [][]float64{
+		{12},
+		{15},
+		{18},
+	}
+	z2Exp := [][]float64{
+		{12, 12, 12},
+		{15, 15, 15},
+		{18, 18, 18},
+	}
+	x2GPU := CopyH2D(x2)
+	z2RealGPU := Cast(x2GPU, 3)
+	CopyD2H(&z2RealGPU)
+	z2Real := z2RealGPU.CPU
+	ExpCheck(z2Real, z2Exp, t)
+}

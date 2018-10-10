@@ -18,13 +18,15 @@
 package gpu
 
 // #cgo CFLAGS: -I/usr/local/cuda/targets/x86_64-linux/include/
-// #cgo LDFLAGS: -L/usr/local/cuda/lib64/ -L/usr/lib/x86_64-linux-gnu -lcudart -lcuda -lcudnn -lcublas
+// #cgo LDFLAGS: -L/usr/local/cuda/lib64/ -L/usr/lib/x86_64-linux-gnu -L/root/go/src/github.com/kuroko1t/gmat/gpu/ -lcudart -lcuda -lcudnn -lcublas -lgmat
 // #include </usr/local/cuda/include/cuda_runtime.h>
+// #include </usr/local/cuda/include/cuda.h>
+// #include "/root/go/src/github.com/kuroko1t/gmat/gpu/gmat.h"
 // #include "cublas_v2.h"
 // #include </usr/include/cudnn.h>
 import "C"
 import "unsafe"
-//import "fmt"
+import "fmt"
 
 type Handle struct {
 	cublasHandle C.cublasHandle_t
@@ -193,4 +195,72 @@ func (handle *Handle) SumCol(x *C.float, shape []int) *C.float {
 	C.cudaMemcpy(unsafe.Pointer(z), unsafe.Pointer(&hostSum[0]),
 		(C.size_t)(unsafe.Sizeof(float32(0))* uintptr(n*m)), C.cudaMemcpyHostToDevice)
 	return z
+}
+
+//const pointerSize = 8
+
+func (handle *Handle) Mul(x *C.float, y *C.float, shape []int) *C.float {
+	m := shape[0]
+	n := shape[1]
+	z := handle.Malloc(m*n)
+	N := C.int(m*n)
+	var threadsPerBlock C.int = 256
+	var blocksPerGrid C.int =
+		(N + threadsPerBlock - 1) / threadsPerBlock
+	fmt.Println(blocksPerGrid)
+	C.gmul(blocksPerGrid, threadsPerBlock, x, y, z)
+	return z
+}
+
+func (handle *Handle) MulE(x *C.float, y float64, shape []int) *C.float {
+	m := shape[0]
+	n := shape[1]
+	z := handle.Malloc(m*n)
+	N := C.int(m*n)
+	var threadsPerBlock C.int = 256
+	var blocksPerGrid C.int =
+		(N + threadsPerBlock - 1) / threadsPerBlock
+	C.gmule(blocksPerGrid, threadsPerBlock, x, C.float(y), z)
+	return z
+}
+
+func (handle *Handle) Div(x *C.float, y *C.float, shape []int) *C.float {
+	m := shape[0]
+	n := shape[1]
+	z := handle.Malloc(m*n)
+	N := C.int(m*n)
+	var threadsPerBlock C.int = 256
+	var blocksPerGrid C.int =
+		(N + threadsPerBlock - 1) / threadsPerBlock
+	C.gdiv(blocksPerGrid, threadsPerBlock, x, y, z)
+	return z
+}
+
+func (handle *Handle) Cast(x *C.float, shape []int, castSize int) *C.float {
+	m := shape[0]
+	n := shape[1]
+	var offset C.size_t = 0
+	if m == 1 {
+		z := handle.Malloc(castSize * n)
+		for i := 0; i < castSize; i++ {
+			zoffset := (*C.float)(unsafe.Pointer((uintptr(offset) + uintptr(unsafe.Pointer(z)))))
+			C.cudaMemcpy(unsafe.Pointer(zoffset), unsafe.Pointer(x),
+				(C.size_t)(unsafe.Sizeof(float32(0))* uintptr(n)), C.cudaMemcpyDeviceToDevice)
+			offset += (C.size_t)(unsafe.Sizeof(float32(0)) * uintptr(castSize))
+		}
+		return z
+	}
+	if n == 1 {
+		z := handle.Malloc(m * castSize)
+		for i := 0; i < castSize; i++ {
+			zoffset := (*C.float)(unsafe.Pointer((uintptr(offset) + uintptr(unsafe.Pointer(z)))))
+			C.cudaMemcpy(unsafe.Pointer(zoffset), unsafe.Pointer(x),
+				(C.size_t)(unsafe.Sizeof(float32(0)) * uintptr(m)), C.cudaMemcpyDeviceToDevice)
+			offset += (C.size_t)(unsafe.Sizeof(float32(0)) * uintptr(castSize))
+		}
+		return z
+	} else {
+		z := handle.Malloc(m * n)
+		return z
+	}
 }

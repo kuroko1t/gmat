@@ -98,3 +98,32 @@ func SumCol(x Tensor) (z Tensor) {
 	z.Shape = x.Shape
 	return z
 }
+
+func MulE(x Tensor, y float64) (z Tensor) {
+	z.GPU = handle.MulE(x.GPU, y, x.Shape)
+	z.Shape = x.Shape
+	return z
+}
+
+func Mul(x, y Tensor) (z Tensor) {
+	z.GPU = handle.Mul(x.GPU, y.GPU, x.Shape)
+	z.Shape = x.Shape
+	return z
+}
+
+func Div(x, y Tensor) (z Tensor) {
+	z.GPU = handle.Div(x.GPU, y.GPU, x.Shape)
+	z.Shape = x.Shape
+	return z
+}
+
+func Cast(x Tensor, castSize int) (z Tensor) {
+	if (x.Shape[0] == 1) {
+		z.Shape = []int{castSize, x.Shape[1]}
+	}
+	if (x.Shape[1] == 1) {
+		z.Shape = []int{x.Shape[0], castSize}
+	}
+	z.GPU = handle.Cast(x.GPU, x.Shape, castSize)
+	return z
+}
