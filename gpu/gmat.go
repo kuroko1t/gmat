@@ -241,16 +241,22 @@ func (handle *Handle) Cast(x *C.float, shape []int, castSize int) *C.float {
 	n := shape[1]
 	var offset C.size_t = 0
 	if m == 1 {
+		var offsetSrc C.size_t = 0
 		z := handle.Malloc(castSize * n)
-		for i := 0; i < castSize; i++ {
-			zoffset := (*C.float)(unsafe.Pointer((uintptr(offset) + uintptr(unsafe.Pointer(z)))))
-			C.cudaMemcpy(unsafe.Pointer(zoffset), unsafe.Pointer(x),
-				(C.size_t)(unsafe.Sizeof(float32(0))* uintptr(n)), C.cudaMemcpyDeviceToDevice)
-			offset += (C.size_t)(unsafe.Sizeof(float32(0)) * uintptr(castSize))
+		for j := 0; j < n; j++ {
+			for i := 0; i < castSize; i++ {
+				zoffset := (*C.float)(unsafe.Pointer((uintptr(offset) + uintptr(unsafe.Pointer(z)))))
+				xoffset := (*C.float)(unsafe.Pointer((uintptr(offsetSrc) + uintptr(unsafe.Pointer(x)))))
+				C.cudaMemcpy(unsafe.Pointer(zoffset), unsafe.Pointer(xoffset),
+					(C.size_t)(unsafe.Sizeof(float32(0))), C.cudaMemcpyDeviceToDevice)
+				offset += (C.size_t)(unsafe.Sizeof(float32(0)))
+			}
+			offsetSrc += (C.size_t)(unsafe.Sizeof(float32(0)))
 		}
 		return z
 	}
 	if n == 1 {
+		fmt.Println("n=1")
 		z := handle.Malloc(m * castSize)
 		for i := 0; i < castSize; i++ {
 			zoffset := (*C.float)(unsafe.Pointer((uintptr(offset) + uintptr(unsafe.Pointer(z)))))

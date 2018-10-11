@@ -127,3 +127,8 @@ func Cast(x Tensor, castSize int) (z Tensor) {
 	z.GPU = handle.Cast(x.GPU, x.Shape, castSize)
 	return z
 }
+
+//func Apply(x Tensor, fn func(float32) float32) (z Tensor) {
+// 	z.GPU = handle.Apply(x.GPU, fn)
+// 	return z
+//}
