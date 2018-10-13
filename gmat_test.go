@@ -284,3 +284,85 @@ func TestMaskSuccess(t *testing.T) {
 	zReal := zRealGPU.CPU
 	ExpCheck(zReal, zExp, t)
 }
+
+func TestAxpyESuccess(t *testing.T) {
+	var x = [][]float64{
+		{1, 1, 2},
+		{4, 3, 1},
+		{4, 1, 2},
+	}
+	b := 2.0
+	c := 3.0
+	zExp := [][]float64{
+		{5, 5, 7},
+		{11, 9, 5},
+		{11, 5, 7},
+	}
+	xGPU := CopyH2D(x)
+	zRealGPU := AxpyE(xGPU, b, c)
+	CopyD2H(&zRealGPU)
+	zReal := zRealGPU.CPU
+	ExpCheck(zReal, zExp, t)
+}
+
+func TestExpSuccess(t *testing.T) {
+	// exp(x + b) + c
+	var x = [][]float64{
+		{0, 0, 0},
+		{0, 0, 0},
+		{0, 0, 0},
+	}
+	zExp := [][]float64{
+		{2, 2, 2},
+		{2, 2, 2},
+		{2, 2, 2},
+	}
+	b := 0.0
+	c := 1.0
+	xGPU := CopyH2D(x)
+	zRealGPU := Exp(xGPU, b, c)
+	CopyD2H(&zRealGPU)
+	zReal := zRealGPU.CPU
+	ExpCheck(zReal, zExp, t)
+}
+
+func TestExpTSuccess(t *testing.T) {
+	// 1/ (exp(x + b) + c)
+	var x = [][]float64{
+		{0, 0, 0},
+		{0, 0, 0},
+		{0, 0, 0},
+	}
+	zExp := [][]float64{
+		{0.5, 0.5, 0.5},
+		{0.5, 0.5, 0.5},
+		{0.5, 0.5, 0.5},
+	}
+	b := 0.0
+	c := 1.0
+	xGPU := CopyH2D(x)
+	zRealGPU := ExpT(xGPU, b, c)
+	CopyD2H(&zRealGPU)
+	zReal := zRealGPU.CPU
+	ExpCheck(zReal, zExp, t)
+}
+
+func TestlogSuccess(t *testing.T) {
+	// 1/ (exp(x + b) + c)
+	var x = [][]float64{
+		{1, 1, 1},
+		{1, 1, 1},
+		{1, 1, 1},
+	}
+	zExp := [][]float64{
+		{0, 0, 0},
+		{0, 0, 0},
+		{0, 0, 0},
+	}
+	b := 0.0
+	xGPU := CopyH2D(x)
+	zRealGPU := Log(xGPU, b)
+	CopyD2H(&zRealGPU)
+	zReal := zRealGPU.CPU
+	ExpCheck(zReal, zExp, t)
+}

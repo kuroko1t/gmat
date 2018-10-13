@@ -274,13 +274,50 @@ func (handle *Handle) Cast(x *C.float, shape []int, castSize int) *C.float {
 }
 
 func (handle *Handle) Mask(x *C.float, shape []int) *C.float {
-	z := handle.Malloc(shape[0] * shape[1])
-	if handle.cublasHandle == nil {
-		handle.cublasHandle = cublaInit()
-	}
+	z := handle.Malloc(sizeTensor(shape))
 	N := C.int(shape[0] * shape[1])
 	var blocksPerGrid C.int =
 		(N + threadsPerBlock - 1) / threadsPerBlock
 	C.gmask(blocksPerGrid, threadsPerBlock, x, z)
+	return z
+}
+
+func (handle *Handle) AxpyE(x *C.float, shape []int, b, c float32) *C.float {
+	size := sizeTensor(shape)
+	z := handle.Malloc(size)
+	N := C.int(size)
+	var blocksPerGrid C.int =
+		(N + threadsPerBlock - 1) / threadsPerBlock
+	C.gaxpye(blocksPerGrid, threadsPerBlock, x, C.float(b), C.float(c), z)
+	return z
+}
+
+func (handle *Handle) Exp(x *C.float, shape []int, b, c float32) *C.float {
+	size := sizeTensor(shape)
+	z := handle.Malloc(size)
+	N := C.int(size)
+	var blocksPerGrid C.int =
+		(N + threadsPerBlock - 1) / threadsPerBlock
+	C.gexp(blocksPerGrid, threadsPerBlock, x, C.float(b), C.float(c), z)
+	return z
+}
+
+func (handle *Handle) ExpT(x *C.float, shape []int, b, c float32) *C.float {
+	size := sizeTensor(shape)
+	z := handle.Malloc(size)
+	N := C.int(size)
+	var blocksPerGrid C.int =
+		(N + threadsPerBlock - 1) / threadsPerBlock
+	C.gexpT(blocksPerGrid, threadsPerBlock, x, C.float(b), C.float(c), z)
+	return z
+}
+
+func (handle *Handle) Log(x *C.float, shape []int, b float32) *C.float {
+	size := sizeTensor(shape)
+	z := handle.Malloc(size)
+	N := C.int(size)
+	var blocksPerGrid C.int =
+		(N + threadsPerBlock - 1) / threadsPerBlock
+	C.glog(blocksPerGrid, threadsPerBlock, x, C.float(b), z)
 	return z
 }

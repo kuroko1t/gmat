@@ -134,6 +134,30 @@ func Mask(x Tensor) (z Tensor) {
 	return z
 }
 
+func AxpyE(x Tensor, b ,c float64) (z Tensor) {
+	z.GPU = handle.AxpyE(x.GPU, x.Shape, float32(b), float32(c))
+	z.Shape = x.Shape
+	return z
+}
+
+func Exp(x Tensor, b, c float64) (z Tensor) {
+	z.GPU = handle.Exp(x.GPU, x.Shape, float32(b), float32(c))
+	z.Shape = x.Shape
+	return z
+}
+
+func ExpT(x Tensor, b, c float64) (z Tensor) {
+	z.GPU = handle.ExpT(x.GPU, x.Shape, float32(b), float32(c))
+	z.Shape = x.Shape
+	return z
+}
+
+func Log(x Tensor, b float64) (z Tensor) {
+	z.GPU = handle.Log(x.GPU, x.Shape, float32(b))
+	z.Shape = x.Shape
+	return z
+}
+
 
 //func Apply(x Tensor, fn func(float32) float32) (z Tensor) {
 // 	z.GPU = handle.Apply(x.GPU, fn)

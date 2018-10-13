@@ -79,3 +79,11 @@ func cublasCheck(error C.cublasStatus_t) {
 		fmt.Println(file, line)
 	}
 }
+
+func sizeTensor(x []int) int {
+	sum := 1
+	for i := range x {
+		sum *= x[i]
+	}
+	return sum
+}
