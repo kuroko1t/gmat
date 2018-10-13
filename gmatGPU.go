@@ -140,24 +140,28 @@ func Mask(x Tensor) (z Tensor) {
 }
 
 func AxpyE(x Tensor, b ,c float64) (z Tensor) {
+	// d[i] = a[i] *b + c
 	z.GPU = handle.AxpyE(x.GPU, x.Shape, float32(b), float32(c))
 	z.Shape = x.Shape
 	return z
 }
 
 func Exp(x Tensor, b, c float64) (z Tensor) {
+	// d[i] = expf(a[i] * b) + c;
 	z.GPU = handle.Exp(x.GPU, x.Shape, float32(b), float32(c))
 	z.Shape = x.Shape
 	return z
 }
 
 func ExpT(x Tensor, b, c float64) (z Tensor) {
+	// d[i] = 1/ (expf(a[i] * b) + c);
 	z.GPU = handle.ExpT(x.GPU, x.Shape, float32(b), float32(c))
 	z.Shape = x.Shape
 	return z
 }
 
 func Log(x Tensor, b float64) (z Tensor) {
+	// c[i] = logf(a[i] + b);
 	z.GPU = handle.Log(x.GPU, x.Shape, float32(b))
 	z.Shape = x.Shape
 	return z
