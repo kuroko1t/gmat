@@ -32,6 +32,11 @@ func Make2D(n, m int) (z Tensor) {
 	return z
 }
 
+func Shape2D(x Tensor) (int, int) {
+	return x.Shape[0], x.Shape[1]
+}
+
+
 func CopyH2D(x [][]float64) (z Tensor) {
 	n, m, gpuptr := handle.CopyH2D(x)
 	z.GPU = gpuptr
