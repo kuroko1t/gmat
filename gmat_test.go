@@ -266,3 +266,21 @@ func TestCastSuccess(t *testing.T) {
 	z2Real := z2RealGPU.CPU
 	ExpCheck(z2Real, z2Exp, t)
 }
+
+func TestMaskSuccess(t *testing.T) {
+	var x = [][]float64{
+		{-1, 6, 8},
+		{4, 0, 8},
+		{4, 6, -1},
+	}
+	zExp := [][]float64{
+		{0, 1, 1},
+		{1, 0, 1},
+		{1, 1, 0},
+	}
+	xGPU := CopyH2D(x)
+	zRealGPU := Mask(xGPU)
+	CopyD2H(&zRealGPU)
+	zReal := zRealGPU.CPU
+	ExpCheck(zReal, zExp, t)
+}

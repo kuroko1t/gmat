@@ -18,7 +18,7 @@ void kgdiv(float *a, float *b, float *c) {
 }
 
 __global__
-void kmasc(float *a, float *c) {
+void kmask(float *a, float *c) {
   int i = blockIdx.x*blockDim.x + threadIdx.x;
   if (a[i] <= 0) {
     c[i] = 0;
@@ -63,8 +63,8 @@ extern "C" {
   void gdiv(int blocks, int threads, float *a, float *b, float *c) {
     kgdiv<<<blocks, threads>>>(a, b, c);
   }
-  void gmasc(int blocks, int threads, float *a, float *c) {
-    kmasc<<<blocks, threads>>>(a, c);
+  void gmask(int blocks, int threads, float *a, float *c) {
+    kmask<<<blocks, threads>>>(a, c);
   }
   void gaxpye(int blocks, int threads, float *a, float b, float c, float *d) {
     kaxpye<<<blocks, threads>>>(a, b, c, d);

@@ -18,15 +18,17 @@
 package gpu
 
 // #cgo CFLAGS: -I/usr/local/cuda/targets/x86_64-linux/include/
-// #cgo LDFLAGS: -L/usr/local/cuda/lib64/ -L/usr/lib/x86_64-linux-gnu -L/root/go/src/github.com/kuroko1t/gmat/gpu/ -lcudart -lcuda -lcudnn -lcublas -lgmat
+// #cgo LDFLAGS: -L/usr/local/cuda/lib64/ -L/usr/lib/x86_64-linux-gnu -L/home/kue/go/src/github.com/kuroko1t/gmat/gpu/ -lcudart -lcuda -lcudnn -lcublas -lgmat
 // #include </usr/local/cuda/include/cuda_runtime.h>
 // #include </usr/local/cuda/include/cuda.h>
-// #include "/root/go/src/github.com/kuroko1t/gmat/gpu/gmat.h"
+// #include "/home/kue/go/src/github.com/kuroko1t/gmat/gpu/gmat.h"
 // #include "cublas_v2.h"
 // #include </usr/include/cudnn.h>
 import "C"
 import "unsafe"
 import "fmt"
+
+var threadsPerBlock C.int = 256
 
 type Handle struct {
 	cublasHandle C.cublasHandle_t
@@ -229,7 +231,6 @@ func (handle *Handle) Div(x *C.float, y *C.float, shape []int) *C.float {
 	n := shape[1]
 	z := handle.Malloc(m*n)
 	N := C.int(m*n)
-	var threadsPerBlock C.int = 256
 	var blocksPerGrid C.int =
 		(N + threadsPerBlock - 1) / threadsPerBlock
 	C.gdiv(blocksPerGrid, threadsPerBlock, x, y, z)
@@ -269,4 +270,16 @@ func (handle *Handle) Cast(x *C.float, shape []int, castSize int) *C.float {
 		z := handle.Malloc(m * n)
 		return z
 	}
+}
+
+func (handle *Handle) Mask(x *C.float, shape []int) *C.float {
+	z := handle.Malloc(shape[0] * shape[1])
+	if handle.cublasHandle == nil {
+		handle.cublasHandle = cublaInit()
+	}
+	N := C.int(shape[0] * shape[1])
+	var blocksPerGrid C.int =
+		(N + threadsPerBlock - 1) / threadsPerBlock
+	C.gmask(blocksPerGrid, threadsPerBlock, x, z)
+	return z
 }

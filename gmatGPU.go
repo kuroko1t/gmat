@@ -128,6 +128,13 @@ func Cast(x Tensor, castSize int) (z Tensor) {
 	return z
 }
 
+func Mask(x Tensor) (z Tensor) {
+	z.GPU = handle.Mask(x.GPU, x.Shape)
+	z.Shape = x.Shape
+	return z
+}
+
+
 //func Apply(x Tensor, fn func(float32) float32) (z Tensor) {
 // 	z.GPU = handle.Apply(x.GPU, fn)
 // 	return z
