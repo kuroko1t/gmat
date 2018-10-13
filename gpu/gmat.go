@@ -18,11 +18,12 @@
 package gpu
 
 // #cgo CFLAGS: -I/usr/local/cuda/targets/x86_64-linux/include/
-// #cgo LDFLAGS: -L/usr/local/cuda/lib64/ -L/usr/lib/x86_64-linux-gnu -L/home/kue/go/src/github.com/kuroko1t/gmat/gpu/ -lcudart -lcuda -lcudnn -lcublas -lgmat
+// #cgo LDFLAGS: -L/usr/local/cuda/lib64/ -L/usr/lib/x86_64-linux-gnu -L/home/kue/go/src/github.com/kuroko1t/gmat/gpu/ -lcudart -lcuda -lcudnn -lcublas -lgmat -lcurand
 // #include </usr/local/cuda/include/cuda_runtime.h>
 // #include </usr/local/cuda/include/cuda.h>
 // #include "/home/kue/go/src/github.com/kuroko1t/gmat/gpu/gmat.h"
 // #include "cublas_v2.h"
+// #include <curand.h>
 // #include </usr/include/cudnn.h>
 import "C"
 import "unsafe"
@@ -32,6 +33,7 @@ var threadsPerBlock C.int = 256
 
 type Handle struct {
 	cublasHandle C.cublasHandle_t
+	curandgen C.curandGenerator_t
 }
 
 type Tensor struct {
@@ -200,8 +202,6 @@ func (handle *Handle) SumCol(x *C.float, shape []int) *C.float {
 	return z
 }
 
-//const pointerSize = 8
-
 func (handle *Handle) Mul(x *C.float, y *C.float, shape []int) *C.float {
 	m := shape[0]
 	n := shape[1]
@@ -319,5 +319,15 @@ func (handle *Handle) Log(x *C.float, shape []int, b float32) *C.float {
 	var blocksPerGrid C.int =
 		(N + threadsPerBlock - 1) / threadsPerBlock
 	C.glog(blocksPerGrid, threadsPerBlock, x, C.float(b), z)
+	return z
+}
+
+func (handle *Handle) RandomNorm(shape []int) *C.float {
+	if handle.curandgen == nil {
+		handle.curandgen = curandInit()
+	}
+	size := sizeTensor(shape)
+	z := handle.Malloc(size)
+	curandCheck(C.curandGenerateUniform(handle.curandgen, z, C.size_t(size)))
 	return z
 }

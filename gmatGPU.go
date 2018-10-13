@@ -158,6 +158,12 @@ func Log(x Tensor, b float64) (z Tensor) {
 	return z
 }
 
+func RandomNorm(size []int)(z Tensor) {
+	z.GPU = handle.RandomNorm(size)
+	z.Shape = size
+	return z
+}
+
 
 //func Apply(x Tensor, fn func(float32) float32) (z Tensor) {
 // 	z.GPU = handle.Apply(x.GPU, fn)

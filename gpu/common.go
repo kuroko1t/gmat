@@ -17,9 +17,10 @@
 package gpu
 
 // #cgo CFLAGS: -I/usr/local/cuda/targets/x86_64-linux/include/
-// #cgo LDFLAGS: -L/usr/local/cuda/lib64/ -L/usr/lib/x86_64-linux-gnu -lcudart -lcuda -lcudnn -lcublas
+// #cgo LDFLAGS: -L/usr/local/cuda/lib64/ -L/usr/lib/x86_64-linux-gnu -lcudart -lcuda -lcudnn -lcublas -lcurand
 // #include </usr/local/cuda/include/cuda_runtime.h>
 // #include "cublas_v2.h"
+// #include <curand.h>
 // #include </usr/include/cudnn.h>
 import "C"
 
@@ -62,6 +63,13 @@ func cublaInit() C.cublasHandle_t {
 	return cublasHandle
 }
 
+func curandInit() C.curandGenerator_t {
+	var curandgen C.curandGenerator_t
+	curandCheck(C.curandCreateGenerator(&curandgen, C.CURAND_RNG_PSEUDO_DEFAULT))
+	curandCheck(C.curandSetPseudoRandomGeneratorSeed(curandgen, 0))
+	return curandgen
+}
+
 func cudaCheck(error C.cudaError_t) {
 	if error != 0 {
 		er_message := C.GoString(C.cudaGetErrorString(error))
@@ -70,6 +78,15 @@ func cudaCheck(error C.cudaError_t) {
 		fmt.Println(file, line)
 	}
 }
+
+func curandCheck(error C.curandStatus_t) {
+	if error != C.CURAND_STATUS_SUCCESS {
+		fmt.Print("ERR:", error, "  ")
+		_, file, line, _ := runtime.Caller(1)
+		fmt.Println(file, line)
+	}
+}
+
 
 func cublasCheck(error C.cublasStatus_t) {
 	if error != C.CUBLAS_STATUS_SUCCESS {

@@ -37,6 +37,22 @@ func ExpCheck(zReal [][]float64, zExp [][]float64, t *testing.T) {
 	}
 }
 
+func ExpRangeCheck(zReal [][]float64, start, end float64, t *testing.T) {
+	success := true
+	for i, zArray := range zReal {
+		for j, _ := range zArray {
+			if start > zReal[i][j] || end < zReal[i][j] {
+				success = false
+			}
+		}
+	}
+	if !success {
+		fmt.Println("Real:", zReal)
+		t.Fatal("failed Test!")
+	}
+}
+
+
 func TestDotSuccess(t *testing.T) {
 	xdot := [][]float64{
 		{1, 2, 3},
@@ -365,4 +381,14 @@ func TestlogSuccess(t *testing.T) {
 	CopyD2H(&zRealGPU)
 	zReal := zRealGPU.CPU
 	ExpCheck(zReal, zExp, t)
+}
+
+func TestRandomNormSuccess(t *testing.T) {
+	// make random matrix
+	shape := []int{2,3}
+	zRealGPU := RandomNorm(shape)
+	CopyD2H(&zRealGPU)
+	zReal := zRealGPU.CPU
+	ExpRangeCheck(zReal, 0.0 , 1.0, t)
+
 }
