@@ -73,6 +73,7 @@ func (handle *Handle) CopyD2H(shape []int, gpuptr *C.float) [][]float64 {
 		unsafe.Pointer(gpuptr),
 		C.size_t(n*m*typeSize), C.cudaMemcpyDeviceToHost))
 	z64 := f2d(z, n, m)
+	defer cudaCheck(C.cudaFree(unsafe.Pointer(gpuptr)))
 	return z64
 }
 
