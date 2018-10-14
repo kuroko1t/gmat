@@ -199,3 +199,9 @@ func SqrtT(x Tensor, b , c float64) (z Tensor) {
 	z.Shape = x.Shape
 	return z
 }
+
+func ArgMaxCol(x Tensor) (z Tensor) {
+	z.GPU = handle.ArgMaxCol(x.GPU, x.Shape)
+	z.Shape = x.Shape
+	return z
+}

@@ -383,3 +383,42 @@ func (handle *Handle) SqrtT(x *C.float, shape []int, b ,c float32) *C.float {
 	C.gsqrtT(blocksPerGrid, threadsPerBlock, x, C.float(b), C.float(c), z)
 	return z
 }
+
+func (handle *Handle) ArgMaxCol(x *C.float, shape []int) *C.float {
+	// max col
+	size := sizeTensor(shape)
+	z := handle.Malloc(size)
+	if handle.cublasHandle == nil {
+		handle.cublasHandle = cublaInit()
+	}
+	m := shape[0]
+	n := shape[1]
+	tmpSum := handle.Malloc(m)
+	var tmp C.int
+	var offset C.size_t = 0
+	for i := 0; i < m; i++ {
+		xoffset := goffset(x, offset)
+		sumoffset := goffset(tmpSum, offset)
+		cublasCheck(C.cublasIsamax(handle.cublasHandle,
+			C.int(n),
+			xoffset , C.int(m), &tmp))
+		tmp = tmp -1
+		xoffsetMax := goffset(xoffset, C.size_t(unsafe.Sizeof(float32(0)) * uintptr(tmp* C.int(m))))
+		offset += (C.size_t)(unsafe.Sizeof(float32(0)))
+		C.cudaMemcpy(unsafe.Pointer(sumoffset), unsafe.Pointer(xoffsetMax),
+			(C.size_t)(unsafe.Sizeof(float32(0))), C.cudaMemcpyDeviceToDevice)
+	}
+	offset = 0
+	for i := 0; i < n; i++ {
+		zoffset := goffset(z, offset)
+		C.cudaMemcpy(unsafe.Pointer(zoffset), unsafe.Pointer(tmpSum),
+			(C.size_t)(unsafe.Sizeof(float32(0)) * uintptr(m)), C.cudaMemcpyDeviceToDevice)
+		offset += (C.size_t)(unsafe.Sizeof(float32(0)) * uintptr(m))
+	}
+	return z
+}
+
+func goffset(x *C.float, offset C.size_t) *C.float {
+	xoffset := (*C.float)(unsafe.Pointer((uintptr(offset) + uintptr(unsafe.Pointer(x)))))
+	return xoffset
+}

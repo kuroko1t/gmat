@@ -466,3 +466,22 @@ func TestSqrtTSuccess(t *testing.T) {
 	zReal := zRealGPU.CPU
 	ExpCheck(zReal, zExp, t)
 }
+
+func TestArgMaxColSuccess(t *testing.T) {
+	//
+	var x = [][]float64{
+		{1, 2},
+		{3, 1},
+		{4, 4},
+	}
+	zExp := [][]float64{
+		{2, 2},
+		{3, 3},
+		{4, 4},
+	}
+	xGPU := CopyH2D(x)
+	zRealGPU := ArgMaxCol(xGPU)
+	CopyD2H(&zRealGPU)
+	zReal := zRealGPU.CPU
+	ExpCheck(zReal, zExp, t)
+}
