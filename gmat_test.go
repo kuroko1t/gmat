@@ -392,3 +392,77 @@ func TestRandomNormSuccess(t *testing.T) {
 	ExpRangeCheck(zReal, 0.0 , 1.0, t)
 
 }
+
+func TestTSuccess(t *testing.T) {
+	var x = [][]float64{
+		{2, 1, 3},
+		{2, 2, 3},
+	}
+	zExp := [][]float64{
+		{2, 2},
+		{1, 2},
+		{3, 3},
+	}
+	xGPU := CopyH2D(x)
+	zRealGPU := T(xGPU)
+	CopyD2H(&zRealGPU)
+	zReal := zRealGPU.CPU
+	ExpCheck(zReal, zExp, t)
+}
+
+func TestSubSuccess(t *testing.T) {
+	var x = [][]float64{
+		{2, 1, 1},
+		{1, 1, 2},
+		{1, 3, 1},
+	}
+	var y = [][]float64{
+		{1, 1, 4},
+		{2, 3, 1},
+		{1, 1, 2},
+	}
+	zExp := [][]float64{
+		{1, 0, -3},
+		{-1, -2, 1},
+		{0, 2, -1},
+	}
+	xGPU := CopyH2D(x)
+	yGPU := CopyH2D(y)
+	zRealGPU := Sub(xGPU, yGPU)
+	CopyD2H(&zRealGPU)
+	zReal := zRealGPU.CPU
+	ExpCheck(zReal, zExp, t)
+}
+
+func TestMakeInitSuccess(t *testing.T) {
+	zExp := [][]float64{
+		{3, 3},
+		{3, 3},
+		{3, 3},
+	}
+	zRealGPU := MakeInit(3, 2, 3.0)
+	CopyD2H(&zRealGPU)
+	zReal := zRealGPU.CPU
+	ExpCheck(zReal, zExp, t)
+}
+
+func TestSqrtTSuccess(t *testing.T) {
+	// c[i] = 1 / (sqrtf(a[i] + b) + d);
+	var x = [][]float64{
+		{4, 4},
+		{4, 4},
+		{4, 4},
+	}
+	alpha := 0.0
+	beta := 0.0
+	zExp := [][]float64{
+		{0.5, 0.5},
+		{0.5, 0.5},
+		{0.5, 0.5},
+	}
+	xGPU := CopyH2D(x)
+	zRealGPU := SqrtT(xGPU, alpha, beta)
+	CopyD2H(&zRealGPU)
+	zReal := zRealGPU.CPU
+	ExpCheck(zReal, zExp, t)
+}

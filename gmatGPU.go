@@ -32,6 +32,12 @@ func Make2D(n, m int) (z Tensor) {
 	return z
 }
 
+func MakeInit(n, m int, value float64) (z Tensor) {
+	z.GPU = handle.MakeInit(n , m , float32(value))
+	z.Shape = []int{n, m}
+	return z
+}
+
 func Shape2D(x Tensor) (int, int) {
 	return x.Shape[0], x.Shape[1]
 }
@@ -173,8 +179,23 @@ func RandomNorm(size []int)(z Tensor) {
 	return z
 }
 
+func T(x Tensor)(z Tensor) {
+	// Transpose Tensor
+	z.GPU = handle.T(x.GPU, x.Shape)
+	z.Shape = []int{x.Shape[1], x.Shape[0]}
+	return z
+}
 
-//func Apply(x Tensor, fn func(float32) float32) (z Tensor) {
-// 	z.GPU = handle.Apply(x.GPU, fn)
-// 	return z
-//}
+func Sub(x , y Tensor)(z Tensor) {
+	// c[i] = a[i] - b[i];
+	z.GPU = handle.Sub(x.GPU, y.GPU, x.Shape)
+	z.Shape = x.Shape
+	return z
+}
+
+func SqrtT(x Tensor, b , c float64) (z Tensor) {
+	// c[i] = 1 / (sqrtf(a[i] + b) + d);
+	z.GPU = handle.SqrtT(x.GPU, x.Shape, float32(b), float32(c))
+	z.Shape = x.Shape
+	return z
+}

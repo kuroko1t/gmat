@@ -66,6 +66,17 @@ func (handle *Handle) CopyH2D(x [][]float64) (int, int, *C.float) {
 	return n, m, (*C.float)(gpuptr)
 }
 
+func (handle *Handle) MakeInit(m, n int, value float32) *C.float {
+	z := handle.Malloc(m * n)
+	N := C.int(m*n)
+	var threadsPerBlock C.int = 256
+	var blocksPerGrid C.int =
+		(N + threadsPerBlock - 1) / threadsPerBlock
+	C.gfill(blocksPerGrid, threadsPerBlock, z, C.float(value))
+	return z
+}
+
+
 func (handle *Handle) CopyD2H(shape []int, gpuptr *C.float) [][]float64 {
 	n := shape[0]
 	m := shape[1]
@@ -329,5 +340,46 @@ func (handle *Handle) RandomNorm(shape []int) *C.float {
 	size := sizeTensor(shape)
 	z := handle.Malloc(size)
 	curandCheck(C.curandGenerateUniform(handle.curandgen, z, C.size_t(size)))
+	return z
+}
+
+func (handle *Handle) T(x *C.float, shape []int) *C.float {
+	size := sizeTensor(shape)
+	m := C.int(shape[1])
+	n := C.int(shape[0])
+	z := handle.Malloc(size)
+	if handle.cublasHandle == nil {
+		handle.cublasHandle = cublaInit()
+	}
+	var alpha C.float = 0
+	var beta C.float = 1
+	cublasCheck(C.cublasSgeam(handle.cublasHandle,
+		C.CUBLAS_OP_N, C.CUBLAS_OP_T,
+		m, n,
+		&alpha,
+		z, m,
+		&beta,
+		x, n,
+		z, m))
+	return z
+}
+
+func (handle *Handle) Sub(x , y *C.float, shape []int) *C.float {
+	size := sizeTensor(shape)
+	z := handle.Malloc(size)
+	N := C.int(size)
+	var blocksPerGrid C.int =
+		(N + threadsPerBlock - 1) / threadsPerBlock
+	C.gsub(blocksPerGrid, threadsPerBlock, x, y, z)
+	return z
+}
+
+func (handle *Handle) SqrtT(x *C.float, shape []int, b ,c float32) *C.float {
+	size := sizeTensor(shape)
+	z := handle.Malloc(size)
+	N := C.int(size)
+	var blocksPerGrid C.int =
+		(N + threadsPerBlock - 1) / threadsPerBlock
+	C.gsqrtT(blocksPerGrid, threadsPerBlock, x, C.float(b), C.float(c), z)
 	return z
 }

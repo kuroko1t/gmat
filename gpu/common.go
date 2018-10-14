@@ -90,8 +90,7 @@ func curandCheck(error C.curandStatus_t) {
 
 func cublasCheck(error C.cublasStatus_t) {
 	if error != C.CUBLAS_STATUS_SUCCESS {
-		er_message := "cublas error"
-		fmt.Print("ERR:", er_message, "  ")
+		fmt.Print("ERR:", error, "  ")
 		_, file, line, _ := runtime.Caller(1)
 		fmt.Println(file, line)
 	}
