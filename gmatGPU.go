@@ -32,6 +32,15 @@ func Make2D(n, m int) (z Tensor) {
 	return z
 }
 
+func Make2DInitArray(x [][]float64) (z Tensor) {
+	n := 0
+	m := 0
+	n , m, z.GPU = handle.CopyH2D(x)
+	z.Shape = []int{n , m}
+	return z
+}
+
+
 func MakeInit(n, m int, value float64) (z Tensor) {
 	z.GPU = handle.MakeInit(n , m , float32(value))
 	z.Shape = []int{n, m}
