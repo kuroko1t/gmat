@@ -214,3 +214,8 @@ func ArgMaxCol(x Tensor) (z Tensor) {
 	z.Shape = x.Shape
 	return z
 }
+
+func Sum(x Tensor) (float64) {
+	sum := handle.Sum(x.GPU, x.Shape)
+	return sum
+}

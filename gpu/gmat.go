@@ -18,16 +18,16 @@
 package gpu
 
 // #cgo CFLAGS: -I/usr/local/cuda/targets/x86_64-linux/include/
-// #cgo LDFLAGS: -L/usr/local/cuda/lib64/ -L/usr/lib/x86_64-linux-gnu -L/home/kue/go/src/github.com/kuroko1t/gmat/gpu/ -lcudart -lcuda -lcudnn -lcublas -lgmat -lcurand
+// #cgo LDFLAGS: -L/usr/local/cuda/lib64/ -L/usr/lib/x86_64-linux-gnu -L/root/go/src/github.com/kuroko1t/gmat/gpu/ -lcudart -lcuda -lcudnn -lcublas -lgmat -lcurand
 // #include </usr/local/cuda/include/cuda_runtime.h>
 // #include </usr/local/cuda/include/cuda.h>
-// #include "/home/kue/go/src/github.com/kuroko1t/gmat/gpu/gmat.h"
+// #include "/root/go/src/github.com/kuroko1t/gmat/gpu/gmat.h"
 // #include "cublas_v2.h"
 // #include <curand.h>
 // #include </usr/include/cudnn.h>
 import "C"
 import "unsafe"
-import "fmt"
+//import "fmt"
 
 var threadsPerBlock C.int = 256
 
@@ -221,7 +221,7 @@ func (handle *Handle) Mul(x *C.float, y *C.float, shape []int) *C.float {
 	var threadsPerBlock C.int = 256
 	var blocksPerGrid C.int =
 		(N + threadsPerBlock - 1) / threadsPerBlock
-	fmt.Println(blocksPerGrid)
+	//fmt.Println(blocksPerGrid)
 	C.gmul(blocksPerGrid, threadsPerBlock, x, y, z)
 	return z
 }
@@ -269,7 +269,7 @@ func (handle *Handle) Cast(x *C.float, shape []int, castSize int) *C.float {
 		return z
 	}
 	if n == 1 {
-		fmt.Println("n=1")
+		//fmt.Println("n=1")
 		z := handle.Malloc(m * castSize)
 		for i := 0; i < castSize; i++ {
 			zoffset := (*C.float)(unsafe.Pointer((uintptr(offset) + uintptr(unsafe.Pointer(z)))))
@@ -421,4 +421,17 @@ func (handle *Handle) ArgMaxCol(x *C.float, shape []int) *C.float {
 func goffset(x *C.float, offset C.size_t) *C.float {
 	xoffset := (*C.float)(unsafe.Pointer((uintptr(offset) + uintptr(unsafe.Pointer(x)))))
 	return xoffset
+}
+
+func (handle *Handle) Sum(x *C.float, shape []int) float64 {
+	size := sizeTensor(shape)
+	if handle.cublasHandle == nil {
+		handle.cublasHandle = cublaInit()
+	}
+	var result C.float = 0
+	cublasCheck(C.cublasSasum(
+		handle.cublasHandle,
+		C.int(size),
+		x, 1, &result ))
+	return float64(result)
 }

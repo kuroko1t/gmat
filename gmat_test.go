@@ -52,6 +52,19 @@ func ExpRangeCheck(zReal [][]float64, start, end float64, t *testing.T) {
 	}
 }
 
+func ExpValueCheck(zReal float64, zExp float64, t *testing.T) {
+	success := true
+	if zExp != zReal {
+		success = false
+	}
+	if !success {
+		fmt.Println("Real:", zReal)
+		fmt.Println("Exp:", zExp)
+		t.Fatal("failed Test!")
+	}
+}
+
+
 
 func TestDotSuccess(t *testing.T) {
 	xdot := [][]float64{
@@ -484,4 +497,16 @@ func TestArgMaxColSuccess(t *testing.T) {
 	CopyD2H(&zRealGPU)
 	zReal := zRealGPU.CPU
 	ExpCheck(zReal, zExp, t)
+}
+
+func TestSumSuccess(t *testing.T) {
+	var x = [][]float64{
+		{1, 2},
+		{3, 1},
+		{4, 4},
+	}
+	zExp := 15.0
+	xGPU := CopyH2D(x)
+	zReal := Sum(xGPU)
+	ExpValueCheck(zReal, zExp, t)
 }
