@@ -219,3 +219,8 @@ func Sum(x Tensor) (float64) {
 	sum := handle.Sum(x.GPU, x.Shape)
 	return sum
 }
+
+func Max(x Tensor) (float64) {
+	maxvalue := handle.Max(x.GPU, x.Shape)
+	return maxvalue
+}

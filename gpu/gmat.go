@@ -435,3 +435,18 @@ func (handle *Handle) Sum(x *C.float, shape []int) float64 {
 		x, 1, &result ))
 	return float64(result)
 }
+
+func (handle *Handle) Max(x *C.float, shape []int) float64 {
+	size := sizeTensor(shape)
+	if handle.cublasHandle == nil {
+		handle.cublasHandle = cublaInit()
+	}
+	var index C.int = 0
+	cublasCheck(C.cublasIsamax(
+		handle.cublasHandle,
+		C.int(size),
+		x, 1, &index))
+	xoffset := goffset(x, C.size_t(uintptr(index - 1) * unsafe.Sizeof(float32(0))))
+	result := handle.CopyD2H([]int{1,1}, xoffset)[0][0]
+	return float64(result)
+}

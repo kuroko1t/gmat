@@ -64,23 +64,23 @@ func ExpValueCheck(zReal float64, zExp float64, t *testing.T) {
 	}
 }
 
-
-
 func TestDotSuccess(t *testing.T) {
 	xdot := [][]float64{
-		{1, 2, 3},
-		{4, 5, 6},
-		{7, 8, 9},
+		{2, 3, 6},
+		{1, 4, 4},
+		{2, 1, 5},
+		{3, 4, 3},
 	}
 	ydot := [][]float64{
-		{8, 7},
-		{5, 4},
-		{2, 1},
+		{3, 1, 2, 2, 3},
+		{2, 4, 2, 4, 6},
+		{3, 4, 6, 3, 8},
 	}
 	zExp := [][]float64{
-		{24, 18},
-		{69, 54},
-		{114, 90},
+		{30, 38, 46, 34, 72},
+		{23, 33, 34, 30, 59},
+		{23, 26, 36, 23, 52},
+		{26, 31, 32, 31, 57},
 	}
 	xdotGPU := CopyH2D(xdot)
 	ydotGPU := CopyH2D(ydot)
@@ -508,5 +508,17 @@ func TestSumSuccess(t *testing.T) {
 	zExp := 15.0
 	xGPU := CopyH2D(x)
 	zReal := Sum(xGPU)
+	ExpValueCheck(zReal, zExp, t)
+}
+
+func TestMaxSuccess(t *testing.T) {
+	var x = [][]float64{
+		{1, 2},
+		{3, 1},
+		{4, 9},
+	}
+	zExp := 9.0
+	xGPU := CopyH2D(x)
+	zReal := Max(xGPU)
 	ExpValueCheck(zReal, zExp, t)
 }
