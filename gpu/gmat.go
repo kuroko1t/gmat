@@ -340,6 +340,7 @@ func (handle *Handle) RandomNorm(shape []int) *C.float {
 	size := sizeTensor(shape)
 	z := handle.Malloc(size)
 	curandCheck(C.curandGenerateUniform(handle.curandgen, z, C.size_t(size)))
+	//curandCheck(C.curandGenerateNormal(handle.curandgen, z, C.size_t(size), 0.0, 0.5))
 	return z
 }
 
@@ -447,6 +448,9 @@ func (handle *Handle) Max(x *C.float, shape []int) float64 {
 		C.int(size),
 		x, 1, &index))
 	xoffset := goffset(x, C.size_t(uintptr(index - 1) * unsafe.Sizeof(float32(0))))
-	result := handle.CopyD2H([]int{1,1}, xoffset)[0][0]
+	var result C.float
+	C.cudaMemcpy(unsafe.Pointer(&result), unsafe.Pointer(xoffset),
+			(C.size_t)(unsafe.Sizeof(float32(0))), C.cudaMemcpyDeviceToHost)
+	//result := handle.CopyD2H([]int{1,1}, xoffset)[0][0]
 	return float64(result)
 }
