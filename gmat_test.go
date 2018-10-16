@@ -164,8 +164,6 @@ func TestAddSuccess(t *testing.T) {
 func TestSumRowSuccess(t *testing.T) {
 	zExp := [][]float64{
 		{12, 15, 18},
-		{12, 15, 18},
-		{12, 15, 18},
 	}
 	x := [][]float64{
 		{1, 2, 3},
@@ -182,9 +180,9 @@ func TestSumRowSuccess(t *testing.T) {
 
 func TestSumColSuccess(t *testing.T) {
 	zExp := [][]float64{
-		{6, 6, 6},
-		{15, 15, 15},
-		{24, 24, 24},
+		{6},
+		{15},
+		{24},
 	}
 	x := [][]float64{
 		{1, 2, 3},

@@ -27,7 +27,7 @@ package gpu
 // #include </usr/include/cudnn.h>
 import "C"
 import "unsafe"
-//import "fmt"
+import "fmt"
 
 var threadsPerBlock C.int = 256
 
@@ -162,25 +162,24 @@ func (handle *Handle) SumRow(x *C.float, shape []int) *C.float {
 	//    ^           [a,b]
 	m := shape[0]
 	n := shape[1]
-	z := handle.Malloc(m*n)
+	z := handle.Malloc(1*n)
 	if handle.cublasHandle == nil {
 		handle.cublasHandle = cublaInit()
 	}
-	hostSum := make([]float32, m)
-	var tmp C.float
+	var hostSum C.float
 	var offset C.size_t = 0
+	var offsetZ C.size_t = 0
 	for i := 0; i < n; i++ {
 		xoffset := (*C.float)(unsafe.Pointer((uintptr(offset) + uintptr(unsafe.Pointer(x)))))
-		zoffset := unsafe.Pointer((uintptr(offset) + uintptr(unsafe.Pointer(z))))
+		zoffset := unsafe.Pointer((uintptr(offsetZ) + uintptr(unsafe.Pointer(z))))
 		cublasCheck(C.cublasSasum(handle.cublasHandle,
 			C.int(m),
-			xoffset , C.int(1), &tmp))
-		for i := 0; i < m; i++ {
-			hostSum[i] = float32(tmp)
-		}
-		C.cudaMemcpy(zoffset, unsafe.Pointer(&hostSum[0]),
-			(C.size_t)(unsafe.Sizeof(float32(0))* uintptr(m)), C.cudaMemcpyHostToDevice)
-		offset += (C.size_t)(uintptr((C.size_t)(m)) * unsafe.Sizeof(float32(0)))
+			xoffset , C.int(1), &hostSum))
+		fmt.Println(hostSum)
+		C.cudaMemcpy(zoffset, unsafe.Pointer(&hostSum),
+			(C.size_t)(unsafe.Sizeof(float32(0))), C.cudaMemcpyHostToDevice)
+		offset += (C.size_t)(unsafe.Sizeof(float32(0))* uintptr(m))
+		offsetZ += (C.size_t)(unsafe.Sizeof(float32(0)))
 	}
 	return z
 }
@@ -190,7 +189,7 @@ func (handle *Handle) SumCol(x *C.float, shape []int) *C.float {
 	//    ^           [a,b]
 	m := shape[0]
 	n := shape[1]
-	z := handle.Malloc(m*n)
+	z := handle.Malloc(m*1)
 	if handle.cublasHandle == nil {
 		handle.cublasHandle = cublaInit()
 	}
@@ -205,11 +204,8 @@ func (handle *Handle) SumCol(x *C.float, shape []int) *C.float {
 		hostSum[i] = float32(tmp)
 		offset += (C.size_t)(unsafe.Sizeof(float32(0)))
 	}
-	for i := 0; i < n; i++ {
-		hostSum = append(hostSum, hostSum...)
-	}
 	C.cudaMemcpy(unsafe.Pointer(z), unsafe.Pointer(&hostSum[0]),
-		(C.size_t)(unsafe.Sizeof(float32(0))* uintptr(n*m)), C.cudaMemcpyHostToDevice)
+		(C.size_t)(unsafe.Sizeof(float32(0))* uintptr(m)), C.cudaMemcpyHostToDevice)
 	return z
 }
 
@@ -451,6 +447,5 @@ func (handle *Handle) Max(x *C.float, shape []int) float64 {
 	var result C.float
 	C.cudaMemcpy(unsafe.Pointer(&result), unsafe.Pointer(xoffset),
 			(C.size_t)(unsafe.Sizeof(float32(0))), C.cudaMemcpyDeviceToHost)
-	//result := handle.CopyD2H([]int{1,1}, xoffset)[0][0]
 	return float64(result)
 }

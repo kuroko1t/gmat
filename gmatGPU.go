@@ -109,13 +109,13 @@ func Add(x, y Tensor) (z Tensor) {
 
 func SumRow(x Tensor) (z Tensor) {
 	z.GPU = handle.SumRow(x.GPU, x.Shape)
-	z.Shape = x.Shape
+	z.Shape = []int{1, x.Shape[1]}
 	return z
 }
 
 func SumCol(x Tensor) (z Tensor) {
 	z.GPU = handle.SumCol(x.GPU, x.Shape)
-	z.Shape = x.Shape
+	z.Shape = []int{x.Shape[0],1}
 	return z
 }
 
@@ -138,6 +138,9 @@ func Div(x, y Tensor) (z Tensor) {
 }
 
 func Cast(x Tensor, castSize int) (z Tensor) {
+	if (x.Shape[0] != 1) && (x.Shape[1] != 1) {
+		log.Fatal("Cast.not support format")
+	}
 	if (x.Shape[0] == 1) {
 		z.Shape = []int{castSize, x.Shape[1]}
 	}
