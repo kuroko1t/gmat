@@ -9,3 +9,4 @@ void glog(int blocks, int threads, float *a, float b, float *c);
 void gsub(int blocks, int threads, float *a, float *b, float *c);
 void gfill(int blocks, int threads, float *a, float b);
 void gsqrtT(int blocks, int threads, float *a, float b, float d, float *c);
+void gdeviceMemset(int blocks, int threads, float *a, float *c);

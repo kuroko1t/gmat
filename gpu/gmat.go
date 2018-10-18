@@ -34,6 +34,7 @@ var threadsPerBlock C.int = 256
 type Handle struct {
 	cublasHandle C.cublasHandle_t
 	curandgen C.curandGenerator_t
+	stream C.cudaStream_t
 }
 
 type Tensor struct {
@@ -175,7 +176,6 @@ func (handle *Handle) SumRow(x *C.float, shape []int) *C.float {
 		cublasCheck(C.cublasSasum(handle.cublasHandle,
 			C.int(m),
 			xoffset , C.int(1), &hostSum))
-		fmt.Println(hostSum)
 		C.cudaMemcpy(zoffset, unsafe.Pointer(&hostSum),
 			(C.size_t)(unsafe.Sizeof(float32(0))), C.cudaMemcpyHostToDevice)
 		offset += (C.size_t)(unsafe.Sizeof(float32(0))* uintptr(m))
@@ -248,29 +248,28 @@ func (handle *Handle) Div(x *C.float, y *C.float, shape []int) *C.float {
 func (handle *Handle) Cast(x *C.float, shape []int, castSize int) *C.float {
 	m := shape[0]
 	n := shape[1]
+	stream := handle.StreamInit()
 	var offset C.size_t = 0
 	if m == 1 {
 		var offsetSrc C.size_t = 0
 		z := handle.Malloc(castSize * n)
 		for j := 0; j < n; j++ {
-			for i := 0; i < castSize; i++ {
-				zoffset := (*C.float)(unsafe.Pointer((uintptr(offset) + uintptr(unsafe.Pointer(z)))))
-				xoffset := (*C.float)(unsafe.Pointer((uintptr(offsetSrc) + uintptr(unsafe.Pointer(x)))))
-				C.cudaMemcpy(unsafe.Pointer(zoffset), unsafe.Pointer(xoffset),
-					(C.size_t)(unsafe.Sizeof(float32(0))), C.cudaMemcpyDeviceToDevice)
-				offset += (C.size_t)(unsafe.Sizeof(float32(0)))
-			}
+			xoffset := goffset(x, offsetSrc)
+			zoffset := goffset(z, offset)
+			var blocksPerGrid C.int =
+				(C.int(castSize) + threadsPerBlock - 1) / threadsPerBlock
+			C.gdeviceMemset(blocksPerGrid, threadsPerBlock, xoffset, zoffset)
+			offset += (C.size_t)(unsafe.Sizeof(float32(0)) * uintptr(castSize))
 			offsetSrc += (C.size_t)(unsafe.Sizeof(float32(0)))
 		}
 		return z
 	}
 	if n == 1 {
-		//fmt.Println("n=1")
 		z := handle.Malloc(m * castSize)
 		for i := 0; i < castSize; i++ {
-			zoffset := (*C.float)(unsafe.Pointer((uintptr(offset) + uintptr(unsafe.Pointer(z)))))
-			C.cudaMemcpy(unsafe.Pointer(zoffset), unsafe.Pointer(x),
-				(C.size_t)(unsafe.Sizeof(float32(0)) * uintptr(m)), C.cudaMemcpyDeviceToDevice)
+			zoffset := goffset(z, offset)
+			C.cudaMemcpyAsync(unsafe.Pointer(zoffset), unsafe.Pointer(x),
+				(C.size_t)(unsafe.Sizeof(float32(0)) * uintptr(m)), C.cudaMemcpyDeviceToDevice, stream)
 			offset += (C.size_t)(unsafe.Sizeof(float32(0)) * uintptr(castSize))
 		}
 		return z

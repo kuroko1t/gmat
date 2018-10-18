@@ -70,6 +70,13 @@ func curandInit() C.curandGenerator_t {
 	return curandgen
 }
 
+func (handle *Handle) StreamInit() C.cudaStream_t {
+	var stream C.cudaStream_t
+	C.cudaStreamCreate(&stream);
+	return stream
+}
+
+
 func cudaCheck(error C.cudaError_t) {
 	if error != 0 {
 		er_message := C.GoString(C.cudaGetErrorString(error))

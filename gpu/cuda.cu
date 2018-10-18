@@ -1,3 +1,5 @@
+#include <thrust/device_vector.h>
+#include <thrust/fill.h>
 
 __global__
 void kgmul(float *a, float *b, float *c) {
@@ -69,6 +71,12 @@ void ksqrtT(float *a, float b, float d, float *c) {
   c[i] = 1 / (sqrtf(a[i] + b) + d);
 }
 
+__global__
+void kdeviceMemset(float *a, float *c) {
+    int i = blockIdx.x*blockDim.x + threadIdx.x;
+    c[i] = a[0];
+}
+
 extern "C" {
   void gmul(int blocks, int threads, float *a, float *b, float *c) {
     kgmul<<<blocks, threads>>>(a, b, c);
@@ -103,4 +111,16 @@ extern "C" {
   void gsqrtT(int blocks, int threads, float *a, float b, float d, float *c) {
     ksqrtT<<<blocks, threads>>>(a, b, d, c);
   }
+  void gdeviceMemset(int blocks, int threads, float *a, float *c) {
+    kdeviceMemset<<<blocks, threads>>>(a, c);
+  }
+  //float* gdev_memset(size_t N, float value) {
+  //  thrust::device_ptr<float> dev_ptr = thrust::device_malloc<float>(N);
+  //  float* raw_ptr = thrust::raw_pointer_cast(dev_ptr);
+  //  return raw_ptr;
+  //}
+}
+
+extern "C++"{
+
 }
