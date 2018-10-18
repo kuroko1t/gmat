@@ -27,7 +27,7 @@ package gpu
 // #include </usr/include/cudnn.h>
 import "C"
 import "unsafe"
-import "fmt"
+//import "fmt"
 
 var threadsPerBlock C.int = 256
 
