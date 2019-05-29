@@ -40,6 +40,7 @@ type Handle struct {
 type Tensor struct {
 	CPU   [][]float64
 	CPU4D [][][][]float64
+	CPU6D [][][][]float64
 	GPU   *C.float
 	//GPU   []float32
 	Shape []int

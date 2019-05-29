@@ -23,51 +23,22 @@ import (
 
 type Tensor cpu.Tensor
 
-func Make2D(n int, m int) Tensor {
-	z := Tensor{Shape: []int{n, m}}
-	z.CPU = cpu.Make2D(n, m)
-	z.Shape = []int{n, m}
-	return z
+func Make(shape []int) Tensor {
+	tensor := Tensor{Shape:shape}
+	if len(shape) == 2 {
+		tensor = Tensor(cpu.Make([]int{shape[0], shape[1]}))
+	} else if len(shape) == 4 {
+		tensor = Tensor(cpu.Make([]int{shape[0], shape[1], shape[2], shape[3]}))
+	} else if len(shape) == 6 {
+		tensor = Tensor(cpu.Make([]int{shape[0], shape[1], shape[2], shape[3], shape[4], shape[5]}))
+	}
+	return tensor
 }
 
 func Make2DInitArray(x [][]float64) Tensor {
 	z := Tensor{CPU: x}
 	z.CPU = x
 	z.Shape = []int{len(x), len(x[0])}
-	return z
-}
-
-func Make4D(n int, c int, h int, w int) [][][][]float64 {
-	z := make([][][][]float64, n)
-	for i := range z {
-		z[i] = make([][][]float64, c)
-		for j := range z[i] {
-			z[i][j] = make([][]float64, h)
-			for k := range z[i][j] {
-				z[i][j][k] = make([]float64, w)
-			}
-		}
-	}
-	return z
-}
-
-func Make6D(n int, c int, h int, w int, x int, y int) [][][][][][]float64 {
-	z := make([][][][][][]float64, n)
-	for i := range z {
-		z[i] = make([][][][][]float64, c)
-		for j := range z[i] {
-			z[i][j] = make([][][][]float64, h)
-			for k := range z[i][j] {
-				z[i][j][k] = make([][][]float64, w)
-				for l := range z[i][j][k] {
-					z[i][j][k][l] = make([][]float64, x)
-					for m := range z[i][j][k][l] {
-						z[i][j][k][l][m] = make([]float64, y)
-					}
-				}
-			}
-		}
-	}
 	return z
 }
 
@@ -195,7 +166,7 @@ func Reshape2D6D(input [][]float64, reN int, reC int, reH int, reW int, reX int,
 			tmp++
 		}
 	}
-	result := Make6D(reN, reC, reH, reW, reX, reY)
+	result := Make([]int{reN, reC, reH, reW, reX, reY}).CPU6D
 	tmp = 0
 	for i := range result {
 		for j := range result[i] {
@@ -235,7 +206,7 @@ func Reshape4D6D(input [][][][]float64, reN int, reC int, reH int, reW int, reX 
 			}
 		}
 	}
-	result := Make6D(reN, reC, reH, reW, reX, reY)
+	result := Make([]int{reN, reC, reH, reW, reX, reY}).CPU6D
 	tmp = 0
 	for i := range result {
 		for j := range result[i] {
@@ -338,7 +309,7 @@ func Pad4D(input [][][][]float64, pad [][]int) [][][][]float64 {
 	zC := c + pad[1][0] + pad[1][1]
 	zH := h + pad[2][0] + pad[2][1]
 	zW := w + pad[3][0] + pad[3][1]
-	z := Make4D(zN, zC, zH, zW)
+	z := Make([]int{zN, zC, zH, zW}).CPU4D
 	for i := range z {
 		for j := range z[i] {
 			for k := range z[i][j] {

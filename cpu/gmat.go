@@ -31,10 +31,21 @@ func numcpu() int {
 type Tensor struct {
 	CPU   [][]float64
 	CPU4D [][][][]float64
+	CPU6D [][][][][][]float64
 	Shape []int
 }
 
-func Make2D(n int, m int) [][]float64 {
+func Make(shape []int) Tensor {
+	tensor := Tensor{Shape:shape}
+	if len(shape) == 2 {
+		tensor.CPU = make2D(shape[0], shape[1])
+	} else if len(shape) == 4 {
+		tensor.CPU4D = make4D(shape[0], shape[1], shape[2], shape[3])
+	}
+	return tensor
+}
+
+func make2D(n int, m int) [][]float64 {
 	z := make([][]float64, n)
 	for i := 0; i < n; i++ {
 		z[i] = make([]float64, m)
@@ -42,7 +53,7 @@ func Make2D(n int, m int) [][]float64 {
 	return z
 }
 
-func Make4D(n int, c int, h int, w int) [][][][]float64 {
+func make4D(n int, c int, h int, w int) [][][][]float64 {
 	z := make([][][][]float64, n)
 	for i := range z {
 		z[i] = make([][][]float64, c)
@@ -83,7 +94,7 @@ func Trans2D(input [][]float64, n int, c int) [][]float64 {
 	inN := len(input)
 	inC := len(input[0])
 	tranmap := map[int]int{0: inN, 1: inC}
-	z := Make2D(tranmap[n], tranmap[c])
+	z := make2D(tranmap[n], tranmap[c])
 	for i := range z {
 		for j := range z[i] {
 			var amap = map[int]int{0: i, 1: j}
@@ -102,7 +113,7 @@ func Trans4D(input [][][][]float64, n int, c int, h int, w int) [][][][]float64 
 	inH := len(input[0][0])
 	inW := len(input[0][0][0])
 	tranmap := map[int]int{0: inN, 1: inC, 2: inH, 3: inW}
-	z := Make4D(tranmap[n], tranmap[c], tranmap[h], tranmap[w])
+	z := make4D(tranmap[n], tranmap[c], tranmap[h], tranmap[w])
 	for i := range z {
 		for j := range z[i] {
 			for k := range z[i][j] {
@@ -159,7 +170,7 @@ func Reshape2D(input [][]float64, reN int, reC int, reH int, reW int) [][][][]fl
 			tmp++
 		}
 	}
-	result := Make4D(reN, reC, reH, reW)
+	result := make4D(reN, reC, reH, reW)
 	tmp = 0
 	for i := range result {
 		for j := range result[i] {
@@ -190,7 +201,7 @@ func Reshape2D2D(input [][]float64, reX int, reY int) [][]float64 {
 			tmp++
 		}
 	}
-	result := Make2D(reX, reY)
+	result := make2D(reX, reY)
 	tmp = 0
 	for i := range result {
 		for j := range result[i] {
@@ -216,7 +227,7 @@ func Reshape2D1D(input [][]float64) []float64 {
 }
 
 func Reshape1D2D(input []float64, n, c int) [][]float64 {
-	input2D := Make2D(n, c)
+	input2D := make2D(n, c)
 	if len(input) != n *c {
 		log.Fatal("gmat.Reshape2D1D worng shape!!")
 	}
@@ -282,7 +293,7 @@ func Reshape4D(input [][][][]float64, reX int, reY int) [][]float64 {
 			}
 		}
 	}
-	result := Make2D(reX, reY)
+	result := make2D(reX, reY)
 	tmp = 0
 	for i := range result {
 		for j := range result[i] {
@@ -353,7 +364,7 @@ func Reshape6D(input [][][][][][]float64, reX int, reY int) [][]float64 {
 			}
 		}
 	}
-	result := Make2D(reX, reY)
+	result := make2D(reX, reY)
 	tmp = 0
 	for i := range result {
 		for j := range result[i] {
@@ -402,7 +413,7 @@ func Pad4D(input [][][][]float64, pad [][]int) [][][][]float64 {
 	zC := c + pad[1][0] + pad[1][1]
 	zH := h + pad[2][0] + pad[2][1]
 	zW := w + pad[3][0] + pad[3][1]
-	z := Make4D(zN, zC, zH, zW)
+	z := make4D(zN, zC, zH, zW)
 	for i := range z {
 		for j := range z[i] {
 			for k := range z[i][j] {
@@ -435,7 +446,7 @@ func MakeInit(n int, m int, value float64) [][]float64 {
 
 func Add(x [][]float64, y [][]float64) [][]float64 {
 	m, n := Shape2D(x)
-	z := Make2D(m, n)
+	z := make2D(m, n)
 	//fn := func(i int, j int, wg *sync.WaitGroup) {
 	// 	z[i][j] = x[i][j] + y[i][j]
 	// 	wg.Done()
@@ -581,7 +592,7 @@ func Dot(x, y [][]float64) [][]float64 {
 	if mx != ny {
 		log.Fatal("Dot.mismatch matrix number")
 	}
-	z := Make2D(nx, my)
+	z := make2D(nx, my)
 	wg := &sync.WaitGroup{}
 	ch := make(chan int, numcpu())
 	fn := func(col int, z [][]float64, wg *sync.WaitGroup) {
@@ -608,7 +619,7 @@ func SumRow(x [][]float64) [][]float64 {
 	//sum | direction [a,b]
 	//    ^           [a,b]
 	m, n := Shape2D(x)
-	sumArray := Make2D(1, n)
+	sumArray := make2D(1, n)
 	for j := 0; j < n; j++ {
 		sumValue := 0.0
 		for i := 0; i < m; i++ {
@@ -623,7 +634,7 @@ func SumCol(x [][]float64) [][]float64 {
 	//sum -> direction [a,a]
 	//				   [b,b]
 	m, n := Shape2D(x)
-	sumArray := Make2D(m, 1)
+	sumArray := make2D(m, 1)
 	for j := 0; j < m; j++ {
 		sumValue := 0.0
 		for i := 0; i < n; i++ {
