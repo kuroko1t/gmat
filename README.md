@@ -56,4 +56,4 @@ func main() {
 
 # License
 
-gdeep is licensed under the Apache License, Version2.0
+gmat is licensed under the Apache License, Version2.0
