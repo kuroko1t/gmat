@@ -72,10 +72,9 @@ func curandInit() C.curandGenerator_t {
 
 func (handle *Handle) StreamInit() C.cudaStream_t {
 	var stream C.cudaStream_t
-	C.cudaStreamCreate(&stream);
+	C.cudaStreamCreate(&stream)
 	return stream
 }
-
 
 func cudaCheck(error C.cudaError_t) {
 	if error != 0 {
@@ -93,7 +92,6 @@ func curandCheck(error C.curandStatus_t) {
 		fmt.Println(file, line)
 	}
 }
-
 
 func cublasCheck(error C.cublasStatus_t) {
 	if error != C.CUBLAS_STATUS_SUCCESS {

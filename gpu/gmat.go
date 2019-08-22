@@ -27,14 +27,15 @@ package gpu
 // #include </usr/include/cudnn.h>
 import "C"
 import "unsafe"
+
 //import "fmt"
 
 var threadsPerBlock C.int = 256
 
 type Handle struct {
 	cublasHandle C.cublasHandle_t
-	curandgen C.curandGenerator_t
-	stream C.cudaStream_t
+	curandgen    C.curandGenerator_t
+	stream       C.cudaStream_t
 }
 
 type Tensor struct {
@@ -70,14 +71,12 @@ func (handle *Handle) CopyH2D(x [][]float64) (int, int, *C.float) {
 
 func (handle *Handle) MakeInit(m, n int, value float32) *C.float {
 	z := handle.Malloc(m * n)
-	N := C.int(m*n)
+	N := C.int(m * n)
 	var threadsPerBlock C.int = 256
-	var blocksPerGrid C.int =
-		(N + threadsPerBlock - 1) / threadsPerBlock
+	var blocksPerGrid C.int = (N + threadsPerBlock - 1) / threadsPerBlock
 	C.gfill(blocksPerGrid, threadsPerBlock, z, C.float(value))
 	return z
 }
-
 
 func (handle *Handle) CopyD2H(shape []int, gpuptr *C.float) [][]float64 {
 	n := shape[0]
@@ -164,7 +163,7 @@ func (handle *Handle) SumRow(x *C.float, shape []int) *C.float {
 	//    ^           [a,b]
 	m := shape[0]
 	n := shape[1]
-	z := handle.Malloc(1*n)
+	z := handle.Malloc(1 * n)
 	if handle.cublasHandle == nil {
 		handle.cublasHandle = cublaInit()
 	}
@@ -176,10 +175,10 @@ func (handle *Handle) SumRow(x *C.float, shape []int) *C.float {
 		zoffset := unsafe.Pointer((uintptr(offsetZ) + uintptr(unsafe.Pointer(z))))
 		cublasCheck(C.cublasSasum(handle.cublasHandle,
 			C.int(m),
-			xoffset , C.int(1), &hostSum))
+			xoffset, C.int(1), &hostSum))
 		C.cudaMemcpy(zoffset, unsafe.Pointer(&hostSum),
 			(C.size_t)(unsafe.Sizeof(float32(0))), C.cudaMemcpyHostToDevice)
-		offset += (C.size_t)(unsafe.Sizeof(float32(0))* uintptr(m))
+		offset += (C.size_t)(unsafe.Sizeof(float32(0)) * uintptr(m))
 		offsetZ += (C.size_t)(unsafe.Sizeof(float32(0)))
 	}
 	return z
@@ -190,7 +189,7 @@ func (handle *Handle) SumCol(x *C.float, shape []int) *C.float {
 	//    ^           [a,b]
 	m := shape[0]
 	n := shape[1]
-	z := handle.Malloc(m*1)
+	z := handle.Malloc(m * 1)
 	if handle.cublasHandle == nil {
 		handle.cublasHandle = cublaInit()
 	}
@@ -201,23 +200,22 @@ func (handle *Handle) SumCol(x *C.float, shape []int) *C.float {
 		xoffset := (*C.float)(unsafe.Pointer((uintptr(offset) + uintptr(unsafe.Pointer(x)))))
 		cublasCheck(C.cublasSasum(handle.cublasHandle,
 			C.int(n),
-			xoffset , C.int(m), &tmp))
+			xoffset, C.int(m), &tmp))
 		hostSum[i] = float32(tmp)
 		offset += (C.size_t)(unsafe.Sizeof(float32(0)))
 	}
 	C.cudaMemcpy(unsafe.Pointer(z), unsafe.Pointer(&hostSum[0]),
-		(C.size_t)(unsafe.Sizeof(float32(0))* uintptr(m)), C.cudaMemcpyHostToDevice)
+		(C.size_t)(unsafe.Sizeof(float32(0))*uintptr(m)), C.cudaMemcpyHostToDevice)
 	return z
 }
 
 func (handle *Handle) Mul(x *C.float, y *C.float, shape []int) *C.float {
 	m := shape[0]
 	n := shape[1]
-	z := handle.Malloc(m*n)
-	N := C.int(m*n)
+	z := handle.Malloc(m * n)
+	N := C.int(m * n)
 	var threadsPerBlock C.int = 256
-	var blocksPerGrid C.int =
-		(N + threadsPerBlock - 1) / threadsPerBlock
+	var blocksPerGrid C.int = (N + threadsPerBlock - 1) / threadsPerBlock
 	//fmt.Println(blocksPerGrid)
 	C.gmul(blocksPerGrid, threadsPerBlock, x, y, z)
 	return z
@@ -226,11 +224,10 @@ func (handle *Handle) Mul(x *C.float, y *C.float, shape []int) *C.float {
 func (handle *Handle) MulE(x *C.float, y float64, shape []int) *C.float {
 	m := shape[0]
 	n := shape[1]
-	z := handle.Malloc(m*n)
-	N := C.int(m*n)
+	z := handle.Malloc(m * n)
+	N := C.int(m * n)
 	var threadsPerBlock C.int = 256
-	var blocksPerGrid C.int =
-		(N + threadsPerBlock - 1) / threadsPerBlock
+	var blocksPerGrid C.int = (N + threadsPerBlock - 1) / threadsPerBlock
 	C.gmule(blocksPerGrid, threadsPerBlock, x, C.float(y), z)
 	return z
 }
@@ -238,10 +235,9 @@ func (handle *Handle) MulE(x *C.float, y float64, shape []int) *C.float {
 func (handle *Handle) Div(x *C.float, y *C.float, shape []int) *C.float {
 	m := shape[0]
 	n := shape[1]
-	z := handle.Malloc(m*n)
-	N := C.int(m*n)
-	var blocksPerGrid C.int =
-		(N + threadsPerBlock - 1) / threadsPerBlock
+	z := handle.Malloc(m * n)
+	N := C.int(m * n)
+	var blocksPerGrid C.int = (N + threadsPerBlock - 1) / threadsPerBlock
 	C.gdiv(blocksPerGrid, threadsPerBlock, x, y, z)
 	return z
 }
@@ -257,8 +253,7 @@ func (handle *Handle) Cast(x *C.float, shape []int, castSize int) *C.float {
 		for j := 0; j < n; j++ {
 			xoffset := goffset(x, offsetSrc)
 			zoffset := goffset(z, offset)
-			var blocksPerGrid C.int =
-				(C.int(castSize) + threadsPerBlock - 1) / threadsPerBlock
+			var blocksPerGrid C.int = (C.int(castSize) + threadsPerBlock - 1) / threadsPerBlock
 			C.gdeviceMemset(blocksPerGrid, threadsPerBlock, xoffset, zoffset)
 			offset += (C.size_t)(unsafe.Sizeof(float32(0)) * uintptr(castSize))
 			offsetSrc += (C.size_t)(unsafe.Sizeof(float32(0)))
@@ -270,7 +265,7 @@ func (handle *Handle) Cast(x *C.float, shape []int, castSize int) *C.float {
 		for i := 0; i < castSize; i++ {
 			zoffset := goffset(z, offset)
 			C.cudaMemcpyAsync(unsafe.Pointer(zoffset), unsafe.Pointer(x),
-				(C.size_t)(unsafe.Sizeof(float32(0)) * uintptr(m)), C.cudaMemcpyDeviceToDevice, stream)
+				(C.size_t)(unsafe.Sizeof(float32(0))*uintptr(m)), C.cudaMemcpyDeviceToDevice, stream)
 			offset += (C.size_t)(unsafe.Sizeof(float32(0)) * uintptr(castSize))
 		}
 		return z
@@ -283,8 +278,7 @@ func (handle *Handle) Cast(x *C.float, shape []int, castSize int) *C.float {
 func (handle *Handle) Mask(x *C.float, shape []int) *C.float {
 	z := handle.Malloc(sizeTensor(shape))
 	N := C.int(shape[0] * shape[1])
-	var blocksPerGrid C.int =
-		(N + threadsPerBlock - 1) / threadsPerBlock
+	var blocksPerGrid C.int = (N + threadsPerBlock - 1) / threadsPerBlock
 	C.gmask(blocksPerGrid, threadsPerBlock, x, z)
 	return z
 }
@@ -293,8 +287,7 @@ func (handle *Handle) AxpyE(x *C.float, shape []int, b, c float32) *C.float {
 	size := sizeTensor(shape)
 	z := handle.Malloc(size)
 	N := C.int(size)
-	var blocksPerGrid C.int =
-		(N + threadsPerBlock - 1) / threadsPerBlock
+	var blocksPerGrid C.int = (N + threadsPerBlock - 1) / threadsPerBlock
 	C.gaxpye(blocksPerGrid, threadsPerBlock, x, C.float(b), C.float(c), z)
 	return z
 }
@@ -303,8 +296,7 @@ func (handle *Handle) Exp(x *C.float, shape []int, b, c float32) *C.float {
 	size := sizeTensor(shape)
 	z := handle.Malloc(size)
 	N := C.int(size)
-	var blocksPerGrid C.int =
-		(N + threadsPerBlock - 1) / threadsPerBlock
+	var blocksPerGrid C.int = (N + threadsPerBlock - 1) / threadsPerBlock
 	C.gexp(blocksPerGrid, threadsPerBlock, x, C.float(b), C.float(c), z)
 	return z
 }
@@ -313,8 +305,7 @@ func (handle *Handle) ExpT(x *C.float, shape []int, b, c float32) *C.float {
 	size := sizeTensor(shape)
 	z := handle.Malloc(size)
 	N := C.int(size)
-	var blocksPerGrid C.int =
-		(N + threadsPerBlock - 1) / threadsPerBlock
+	var blocksPerGrid C.int = (N + threadsPerBlock - 1) / threadsPerBlock
 	C.gexpT(blocksPerGrid, threadsPerBlock, x, C.float(b), C.float(c), z)
 	return z
 }
@@ -323,8 +314,7 @@ func (handle *Handle) Log(x *C.float, shape []int, b float32) *C.float {
 	size := sizeTensor(shape)
 	z := handle.Malloc(size)
 	N := C.int(size)
-	var blocksPerGrid C.int =
-		(N + threadsPerBlock - 1) / threadsPerBlock
+	var blocksPerGrid C.int = (N + threadsPerBlock - 1) / threadsPerBlock
 	C.glog(blocksPerGrid, threadsPerBlock, x, C.float(b), z)
 	return z
 }
@@ -361,22 +351,20 @@ func (handle *Handle) T(x *C.float, shape []int) *C.float {
 	return z
 }
 
-func (handle *Handle) Sub(x , y *C.float, shape []int) *C.float {
+func (handle *Handle) Sub(x, y *C.float, shape []int) *C.float {
 	size := sizeTensor(shape)
 	z := handle.Malloc(size)
 	N := C.int(size)
-	var blocksPerGrid C.int =
-		(N + threadsPerBlock - 1) / threadsPerBlock
+	var blocksPerGrid C.int = (N + threadsPerBlock - 1) / threadsPerBlock
 	C.gsub(blocksPerGrid, threadsPerBlock, x, y, z)
 	return z
 }
 
-func (handle *Handle) SqrtT(x *C.float, shape []int, b ,c float32) *C.float {
+func (handle *Handle) SqrtT(x *C.float, shape []int, b, c float32) *C.float {
 	size := sizeTensor(shape)
 	z := handle.Malloc(size)
 	N := C.int(size)
-	var blocksPerGrid C.int =
-		(N + threadsPerBlock - 1) / threadsPerBlock
+	var blocksPerGrid C.int = (N + threadsPerBlock - 1) / threadsPerBlock
 	C.gsqrtT(blocksPerGrid, threadsPerBlock, x, C.float(b), C.float(c), z)
 	return z
 }
@@ -398,9 +386,9 @@ func (handle *Handle) ArgMaxCol(x *C.float, shape []int) *C.float {
 		sumoffset := goffset(tmpSum, offset)
 		cublasCheck(C.cublasIsamax(handle.cublasHandle,
 			C.int(n),
-			xoffset , C.int(m), &tmp))
-		tmp = tmp -1
-		xoffsetMax := goffset(xoffset, C.size_t(unsafe.Sizeof(float32(0)) * uintptr(tmp* C.int(m))))
+			xoffset, C.int(m), &tmp))
+		tmp = tmp - 1
+		xoffsetMax := goffset(xoffset, C.size_t(unsafe.Sizeof(float32(0))*uintptr(tmp*C.int(m))))
 		offset += (C.size_t)(unsafe.Sizeof(float32(0)))
 		C.cudaMemcpy(unsafe.Pointer(sumoffset), unsafe.Pointer(xoffsetMax),
 			(C.size_t)(unsafe.Sizeof(float32(0))), C.cudaMemcpyDeviceToDevice)
@@ -409,7 +397,7 @@ func (handle *Handle) ArgMaxCol(x *C.float, shape []int) *C.float {
 	for i := 0; i < n; i++ {
 		zoffset := goffset(z, offset)
 		C.cudaMemcpy(unsafe.Pointer(zoffset), unsafe.Pointer(tmpSum),
-			(C.size_t)(unsafe.Sizeof(float32(0)) * uintptr(m)), C.cudaMemcpyDeviceToDevice)
+			(C.size_t)(unsafe.Sizeof(float32(0))*uintptr(m)), C.cudaMemcpyDeviceToDevice)
 		offset += (C.size_t)(unsafe.Sizeof(float32(0)) * uintptr(m))
 	}
 	return z
@@ -429,7 +417,7 @@ func (handle *Handle) Sum(x *C.float, shape []int) float64 {
 	cublasCheck(C.cublasSasum(
 		handle.cublasHandle,
 		C.int(size),
-		x, 1, &result ))
+		x, 1, &result))
 	return float64(result)
 }
 
@@ -443,9 +431,9 @@ func (handle *Handle) Max(x *C.float, shape []int) float64 {
 		handle.cublasHandle,
 		C.int(size),
 		x, 1, &index))
-	xoffset := goffset(x, C.size_t(uintptr(index - 1) * unsafe.Sizeof(float32(0))))
+	xoffset := goffset(x, C.size_t(uintptr(index-1)*unsafe.Sizeof(float32(0))))
 	var result C.float
 	C.cudaMemcpy(unsafe.Pointer(&result), unsafe.Pointer(xoffset),
-			(C.size_t)(unsafe.Sizeof(float32(0))), C.cudaMemcpyDeviceToHost)
+		(C.size_t)(unsafe.Sizeof(float32(0))), C.cudaMemcpyDeviceToHost)
 	return float64(result)
 }
