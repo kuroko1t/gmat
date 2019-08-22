@@ -396,11 +396,11 @@ func TestlogSuccess(t *testing.T) {
 
 func TestRandomNormSuccess(t *testing.T) {
 	// make random matrix
-	shape := []int{2,3}
+	shape := []int{2, 3}
 	zRealGPU := RandomNorm(shape)
 	CopyD2H(&zRealGPU)
 	zReal := zRealGPU.CPU
-	ExpRangeCheck(zReal, 0.0 , 1.0, t)
+	ExpRangeCheck(zReal, 0.0, 1.0, t)
 
 }
 

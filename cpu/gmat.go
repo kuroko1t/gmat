@@ -36,7 +36,7 @@ type Tensor struct {
 }
 
 func Make(shape []int) Tensor {
-	tensor := Tensor{Shape:shape}
+	tensor := Tensor{Shape: shape}
 	if len(shape) == 2 {
 		tensor.CPU = make2D(shape[0], shape[1])
 	} else if len(shape) == 4 {
@@ -45,10 +45,21 @@ func Make(shape []int) Tensor {
 	return tensor
 }
 
-func make2D(n int, m int) [][]float64 {
+func make2D(n, m int) [][]float64 {
 	z := make([][]float64, n)
 	for i := 0; i < n; i++ {
 		z[i] = make([]float64, m)
+	}
+	return z
+}
+
+func make3D(n, c, h int) [][][]float64 {
+	z := make([][][]float64, n)
+	for i := 0; i < n; i++ {
+		z[i] = make([][]float64, c)
+		for j := range z[i] {
+			z[i][j] = make([]float64, h)
+		}
 	}
 	return z
 }
@@ -213,7 +224,7 @@ func Reshape2D2D(input [][]float64, reX int, reY int) [][]float64 {
 }
 
 func Reshape2D1D(input [][]float64) []float64 {
-	n ,c := Shape2D(input)
+	n, c := Shape2D(input)
 	input1D := make([]float64, n*c)
 	//var input1D []float64
 	tmp := 0
@@ -228,7 +239,7 @@ func Reshape2D1D(input [][]float64) []float64 {
 
 func Reshape1D2D(input []float64, n, c int) [][]float64 {
 	input2D := make2D(n, c)
-	if len(input) != n *c {
+	if len(input) != n*c {
 		log.Fatal("gmat.Reshape2D1D worng shape!!")
 	}
 	//var input1D []float64
@@ -241,7 +252,6 @@ func Reshape1D2D(input []float64, n, c int) [][]float64 {
 	}
 	return input2D
 }
-
 
 func Reshape2D6D(input [][]float64, reN int, reC int, reH int, reW int, reX int, reY int) [][][][][][]float64 {
 	var input1D []float64
@@ -379,6 +389,13 @@ func Shape2D(input [][]float64) (n int, c int) {
 	n = len(input)
 	c = len(input[0])
 	return n, c
+}
+
+func Shape3D(input [][][]float64) (n, h, w int) {
+	n = len(input)
+	h = len(input[0])
+	w = len(input[0][0])
+	return n, h, w
 }
 
 func Shape4D(input [][][][]float64) (n int, c int, h int, w int) {
@@ -737,4 +754,25 @@ func HeNorm2D(r int, c int) [][]float64 {
 		}
 	}
 	return z
+}
+
+func Conv1D(input, kernel [][]float64, stride int) [][]float64 {
+	bsize_i, n := Shape2D(input)
+	bsize_k, k := Shape2D(kernel)
+	if bsize_i != bsize_k {
+		panic("not match batchsize conv1d!")
+	}
+	output := make2D(bsize_i, n)
+	for b := 0; b < bsize_i; b++ {
+		for i := 0; i < n; i++ {
+			result := 0.0
+			for j := 0; j < k; j++ {
+				if i+j-1 >= 0 && i+j-1 < n {
+					result += input[b][i+j-1] * kernel[b][j]
+				}
+			}
+			output[b][i] = result
+		}
+	}
+	return output
 }

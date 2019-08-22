@@ -24,7 +24,7 @@ import (
 type Tensor cpu.Tensor
 
 func Make(shape []int) Tensor {
-	tensor := Tensor{Shape:shape}
+	tensor := Tensor{Shape: shape}
 	if len(shape) == 2 {
 		tensor = Tensor(cpu.Make([]int{shape[0], shape[1]}))
 	} else if len(shape) == 4 {
@@ -122,13 +122,12 @@ func Reshape2D1D(x Tensor) []float64 {
 	return y
 }
 
-func Reshape1D2D(x []float64, n,c int) Tensor {
+func Reshape1D2D(x []float64, n, c int) Tensor {
 	z := Tensor{}
-	z.Shape = []int{n,c}
+	z.Shape = []int{n, c}
 	z.CPU = cpu.Reshape1D2D(x, n, c)
 	return z
 }
-
 
 //func Reshape6D(input [][][][][][]float64, reX int, reY int) [][]float64 {
 // 	n := len(input)
@@ -334,5 +333,11 @@ func RandomNorm2D(r int, c int, init float64) Tensor {
 func HeNorm2D(r int, c int) Tensor {
 	z := Tensor{}
 	z.CPU = cpu.HeNorm2D(r, c)
+	return z
+}
+
+func Conv1D(x, filter Tensor, stride int) Tensor {
+	z := Tensor{}
+	z.CPU = cpu.Conv1D(x.CPU, filter.CPU, stride)
 	return z
 }

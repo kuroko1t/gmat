@@ -19,7 +19,21 @@ import (
 	"testing"
 )
 
-func ExpCheck(zReal [][]float64, zExp [][]float64, t *testing.T) {
+func ExpCheck1D(zReal, zExp []float64, t *testing.T) {
+	success := true
+	for i, _ := range zExp {
+		if zExp[i] != zReal[i] {
+			success = false
+		}
+	}
+	if !success {
+		fmt.Println("Real:", zReal)
+		fmt.Println("Exp:", zExp)
+		t.Fatal("failed Test!")
+	}
+}
+
+func ExpCheck(zReal, zExp [][]float64, t *testing.T) {
 	success := true
 	for i, zArray := range zExp {
 		for j, _ := range zArray {
@@ -245,4 +259,16 @@ func TestPad4DSuccess(t *testing.T) {
 	var pad = [][]int{{0, 0}, {0, 0}, {0, 0}, {1, 1}}
 	zReal := Pad4D(xpad, pad)
 	ExpCheck4D(zReal, zExp, t)
+}
+func TestConv1DSuccess(t *testing.T) {
+	var x2d = [][]float64{
+		{10, 50, 60, 10, 20, 40, 30},
+		{10, 50, 60, 10, 20, 40, 30}}
+	var y2d = [][]float64{{2, 3, 4}, {2, 3, 4}}
+	var zExp = [][]float64{
+		{230, 410, 320, 230, 240, 280, 170},
+		{230, 410, 320, 230, 240, 280, 170},
+	}
+	zReal := Conv1D(x2d, y2d, 1)
+	ExpCheck(zReal, zExp, t)
 }
