@@ -31,6 +31,10 @@ func main() {
 }
 ```
 
+# Document
+
+https://godoc.org/github.com/kuroko1t/gmat
+
 # API
 * Make(shape []int) Tensor
 * Make2DInitArray(x [][]float64) Tensor
